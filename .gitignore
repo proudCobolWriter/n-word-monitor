@@ -103,5 +103,5 @@ dist
 # TernJS port file
 .tern-port
 
-*db.json
-*db-backup.json
+db.json
+db-backup.json
