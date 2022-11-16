@@ -10,7 +10,6 @@ const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
 const filePath = 'db.json';
 const intervalDelayInSec = 15;
 const commandCooldownInSec = 7;
-const richPresenceCyclingInSec = 65;
 
 let data = [];
 let changed = false;
@@ -79,16 +78,45 @@ client.on("ready", () => {
 client.on("messageCreate", (msg) => {
     let lowercaseMessage = msg.content.toLowerCase();
 
-    if (lowercaseMessage.includes("nigger") || lowercaseMessage.includes("nigga") || lowercaseMessage.includes("nick gurr") || lowercaseMessage.includes("nickgurr")) {
+    if (lowercaseMessage.includes("nigger") || lowercaseMessage.includes("nigga") || lowercaseMessage.includes("nick gurr") || lowercaseMessage.includes("nickgurr") || lowercaseMessage.includes("nigg") || lowercaseMessage.includes("negro")) {
         let userData = data.find(element => element.user && element.user.userID == msg.author.id);
 
         if (userData) {
             userData.user.score += 1;
+
+            // Leveling up related messages
+            try {
+                let newData = [...(data || [])].sort((a, b) => {
+                    if (!a.user) return 1;
+                    if (!b.user) return -1;
+                    return (b.user.score || 0) - (a.user.score || 0)
+                }); // returns the sorted array
+
+                let place = newData.findIndex((element) => {
+                    if (!element.user) return false;
+                    return element.user.userID == msg.author.id
+                });
+
+                let dataOnThisUser = newData[place + 1];
+
+                if (userData.user.score > 2 && dataOnThisUser && dataOnThisUser.user) {
+                    if (userData.user.score == dataOnThisUser.user.score - 1) {
+                        msg.reply(`Congrats on having said the n-word more times than <@${dataOnThisUser.user.userID}>`).then(() =>
+                            msg.delete()
+                        , 10000);
+                    };
+                };
+            } catch (err) { console.log(err); };
         } else {
             data.push(new Post(msg.author.id, 1));
         };
 
         changed = true;
+    };
+    if (lowercaseMessage.startsWith("kys") || lowercaseMessage.endsWith("kys")) {
+        let emoji = msg.guild.emojis.cache.find(emoji => emoji.name === 'this_tbh');
+
+        if (emoji) { msg.react(emoji); console.log(`Reacted with ${emoji.name}`); };
     };
 });
 
@@ -112,15 +140,10 @@ client.on("messageCreate", (msg) => {
                 writeToJSON();
                 updateNwordUsages();
                 console.log("Updated, n-word counter: " + nwordusages);
+                setDiscordPresence();
             };
         } catch (err) { console.log(err); };
     }, intervalDelayInSec * 1000, writeToJSON);
-
-    setInterval(() => {
-        try {
-            setDiscordPresence();
-        } catch (err) { console.log(err); };
-    }, richPresenceCyclingInSec * 1000, setDiscordPresence);
 })();
 
 client.on("interactionCreate", (interaction) => {
@@ -140,7 +163,7 @@ client.on("interactionCreate", (interaction) => {
 
             if (datai && datai.user) {
                 let emoji = i == 0 ? "🥇" : (i == 1 ? "🥈" : (i == 2 ? "🥉" : ""));
-                fields.push({ name: `${emoji} ${i + 1}# place`, value: `<@!${datai.user.userID.toString()}> has recorded exactly ${datai.user.score.toString()} n-word usages` });
+                fields.push({ name: `${emoji} ${i + 1}# place`, value: `<@!${datai.user.userID.toString()}> has recorded exactly **${datai.user.score.toString()}** n-word usages` });
             } else { break };
         };
 
@@ -155,7 +178,7 @@ client.on("interactionCreate", (interaction) => {
             name: interaction.user.tag,
             iconURL: interaction.user.avatarURL(),
         })
-        .setFooter({ text: `Please use this command again in ${commandCooldownInSec}s   -   You have said the n-word ${dataOnThisUser && dataOnThisUser.user ? dataOnThisUser.user.score.toString() : "0"} times`, iconURL: client.user.defaultAvatarURL })
+        .setFooter({ text: `Please use this command again in ${commandCooldownInSec}s   -   You have said the n-word ${dataOnThisUser && dataOnThisUser.user ? dataOnThisUser.user.score.toString() : "0"} time${dataOnThisUser.user.score && dataOnThisUser.user.score > 1 ? "s" : ""}`, iconURL: client.user.defaultAvatarURL })
         .setTimestamp()
         .setColor("Blurple")
         .addFields(fields)
@@ -189,10 +212,10 @@ client.on("interactionCreate", (interaction) => {
             descriptionString = `Lame, you have never said the n-word.`;
         } else {
             if (place != 0) {
-                descriptionString = `Congrats for having made it up to the #${(place + 1).toString()} place! You have said the n-word a whopping ${dataOnThisUser.user.score ? dataOnThisUser.user.score.toString() : "0"} times.
+                descriptionString = `Congrats for having made it up to the **#${(place + 1).toString()}** place! You have said the n-word a whopping **${dataOnThisUser.user.score ? dataOnThisUser.user.score.toString() : "0"}** time${dataOnThisUser.user.score && dataOnThisUser.user.score > 1 ? "s" : ""}.
                 \n You are just behind ${ ("<@!" + (((newData[place - 1] || []).user) || []).userID + ">") || "nobody lol" }`;
             } else {
-                descriptionString = `youre a zaza addict bro you have made to the #1 place! You have said the n-word a whopping ${dataOnThisUser.user.score ? dataOnThisUser.user.score.toString() : "0"} times.`;
+                descriptionString = `youre a zaza addict bro you have made to the **#1** place! You have said the n-word a whopping ${dataOnThisUser.user.score ? dataOnThisUser.user.score.toString() : "0"} times.`;
             };
         };
 
