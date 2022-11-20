@@ -79,6 +79,11 @@ function setDiscordPresence() {
     console.log("Changed bot's rich presence");
 };
 
+function checkMessage(lowercaseMessage) {
+    return (lowercaseMessage.includes("nigger") || lowercaseMessage.includes("nigga") || lowercaseMessage.includes("nick gurr") 
+       || lowercaseMessage.includes("nickgurr") || lowercaseMessage.includes("nigg") || lowercaseMessage.includes("negro"));
+};
+
 client.on("ready", () => {
     console.log(`Logged in as ${client.user.tag}!`);
     if (nwordusages != 0) setDiscordPresence();
@@ -87,7 +92,7 @@ client.on("ready", () => {
 client.on("messageCreate", (msg) => {
     let lowercaseMessage = msg.content.toLowerCase().replace(/ /g,'');
 
-    if (lowercaseMessage.includes("nigger") || lowercaseMessage.includes("nigga") || lowercaseMessage.includes("nick gurr") || lowercaseMessage.includes("nickgurr") || lowercaseMessage.includes("nigg") || lowercaseMessage.includes("negro")) {
+    if (checkMessage(lowercaseMessage)) {
         let userData = data.find(element => element.user && element.user.userID == msg.author.id);
 
         if (userData) {
@@ -131,6 +136,30 @@ client.on("messageCreate", (msg) => {
     };
 });
 
+client.on("messageDelete", (msg) => {
+    let lowercaseMessage = msg.content.toLowerCase().replace(/ /g,'');
+
+    if (checkMessage(lowercaseMessage)) {
+        let userData = data.find(element => element.user && element.user.userID == msg.author.id);
+
+        if (userData) { userData.user.score -= 1; console.log(`Message containing the n-word got deleted : ${msg.author.tag}`); };
+    };
+});
+
+client.on("messageUpdate", (msgOld, msgNew) => {
+    let [lowercaseOldMessage, lowercaseNewMessage] = [msgOld.content.toLowerCase().replace(/ /g,''), msgNew.content.toLowerCase().replace(/ /g,'')];
+
+    if (checkMessage(lowercaseNewMessage) && !checkMessage(lowercaseOldMessage)) {
+        let userData = data.find(element => element.user && element.user.userID == msgNew.author.id);
+
+        if (userData) { userData.user.score += 1; console.log(`Message containing the n-word got editted : ${msgNew.author.tag}, adding +1`); };
+    } else if (!checkMessage(lowercaseNewMessage) && checkMessage(lowercaseOldMessage)) {
+        let userData = data.find(element => element.user && element.user.userID == msgNew.author.id);
+
+        if (userData) { userData.user.score -= 1; console.log(`Message containing the n-word got editted : ${msgNew.author.tag}, adding -1`); };
+    };
+});
+
 function milestoneFunction() {
     if (nwordusages % 1000 == 0 && nwordusages != 0) {
         try {
@@ -158,7 +187,7 @@ function milestoneFunction() {
     let updateNwordUsages = function () {
         nwordusages = 0;
         data.forEach((element) => {
-            if (element && element.user) {
+            if (element && element.user && element.user.score > 0) {
                 nwordusages = nwordusages + (element.user.score || 0);
             }
         });
