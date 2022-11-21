@@ -95,7 +95,6 @@ function checkMessage(lowercaseMessage) {
   return (
     lowercaseMessage.includes("nigger") ||
     lowercaseMessage.includes("nigga") ||
-    lowercaseMessage.includes("nick gurr") ||
     lowercaseMessage.includes("nickgurr") ||
     lowercaseMessage.includes("nigg") ||
     lowercaseMessage.includes("negro")
@@ -350,7 +349,7 @@ client.on("interactionCreate", (interaction) => {
 
     const collector = interaction.channel.createMessageComponentCollector({
       filter,
-      time: 200 * 1000,
+      time: 300 * 1000,
     });
 
     interaction
