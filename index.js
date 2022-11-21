@@ -115,7 +115,7 @@ client.on("messageCreate", (msg) => {
 
                 let dataOnThisUser = newData[place + 1];
 
-                if (userData.user.score > 2 && dataOnThisUser && dataOnThisUser.user) {
+                if (dataOnThisUser.user.score > 2 && dataOnThisUser && dataOnThisUser.user) {
                     if (userData.user.score == dataOnThisUser.user.score - 1) {
                         msg.reply(`Congrats on having said the n-word more times than <@${dataOnThisUser.user.userID}>`).then(() =>
                             msg.delete()
