@@ -1,4 +1,4 @@
-// Prettified using https://prettier.io/
+// Prettified using prettier.io
 require("dotenv").config({ path: ".env" });
 
 const fs = require("fs");
@@ -14,8 +14,36 @@ const {
   ButtonStyle,
 } = require("discord.js");
 
+const winston = require("winston");
 const client = new Client({ intents: 36481 });
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
+
+// Logging setup
+
+const logger = winston.createLogger({
+  defaultMeta: { service: "user-service" },
+  exitOnError: false,
+  transports: [
+    new winston.transports.File({ filename: "logs/combined.log" }),
+    new winston.transports.Console(),
+  ],
+  format: winston.format.combine(
+    winston.format.label({
+      label: "BOT-LOGS",
+    }),
+    winston.format.timestamp({
+      format: "MMM-DD-YYYY HH:mm:ss",
+    }),
+    winston.format.printf(
+      (info) =>
+        `${info.level}: ${info.label}: ${[info.timestamp]}: ${info.message}`
+    )
+  ),
+});
+
+console.log = (d) => {
+    logger.info(d);
+};
 
 // Constants
 
@@ -78,13 +106,18 @@ function setDiscordPresence() {
   if (odd) {
     client.user.setPresence({
       activities: [
-        { name: `${nwordusages.toString()} n-words on TECN'T`, type: ActivityType.Watching },
+        {
+          name: `${nwordusages.toString()} n-words on TECN'T`,
+          type: ActivityType.Watching,
+        },
       ],
       status: "idle",
     });
   } else {
     client.user.setPresence({
-      activities: [{ name: "Ally is ceo of gay", type: ActivityType.Competing }],
+      activities: [
+        { name: "Ally is ceo of gay", type: ActivityType.Competing },
+      ],
       status: "online",
     });
   }
@@ -110,12 +143,15 @@ client.on("messageCreate", (msg) => {
   let lowercaseMessage = msg.content.toLowerCase().replace(/ /g, "");
 
   if (checkMessage(lowercaseMessage)) {
-    let userData = data.find((element) => element.user && element.user.userID == msg.author.id);
+    let userData = data.find(
+      (element) => element.user && element.user.userID == msg.author.id
+    );
 
     if (userData) {
       if (
         msgCooldownData.has(msg.author.id) &&
-        msgCooldownData.get(msg.author.id) >= Date.now() - coooldownMessagesInSec * 1000
+        msgCooldownData.get(msg.author.id) >=
+          Date.now() - coooldownMessagesInSec * 1000
       )
         return;
       userData.user.score += 1;
@@ -136,13 +172,19 @@ client.on("messageCreate", (msg) => {
 
         let dataOnThisUser = newData[place + 1];
 
-        if (dataOnThisUser.user.score > 2 && dataOnThisUser && dataOnThisUser.user) {
-          if (userData.user.score == dataOnThisUser.user.score - 1) {
+        if (
+          dataOnThisUser.user.score > 2 &&
+          dataOnThisUser &&
+          dataOnThisUser.user
+        ) {
+          if (userData.user.score - 1 == dataOnThisUser.user.score) {
             msg
               .reply(
                 `Congrats on having said the n-word more times than <@${dataOnThisUser.user.userID}>`
               )
-              .then(() => msg.delete(), 10000);
+              .then(() => {
+                console.log("User surpassed someone");
+              }); //msg.delete()
           }
         }
       } catch (err) {
@@ -155,7 +197,9 @@ client.on("messageCreate", (msg) => {
     changed = true;
   }
   if (lowercaseMessage.startsWith("kys") || lowercaseMessage.endsWith("kys")) {
-    let emoji = msg.guild.emojis.cache.find((emoji) => emoji.name === "this_tbh");
+    let emoji = msg.guild.emojis.cache.find(
+      (emoji) => emoji.name === "this_tbh"
+    );
 
     if (emoji) {
       msg.react(emoji);
@@ -168,11 +212,15 @@ client.on("messageDelete", (msg) => {
   let lowercaseMessage = msg.content.toLowerCase().replace(/ /g, "");
 
   if (checkMessage(lowercaseMessage)) {
-    let userData = data.find((element) => element.user && element.user.userID == msg.author.id);
+    let userData = data.find(
+      (element) => element.user && element.user.userID == msg.author.id
+    );
 
     if (userData) {
       userData.user.score -= 1;
-      console.log(`Message containing the n-word got deleted : ${msg.author.tag}`);
+      console.log(
+        `Message containing the n-word got deleted : ${msg.author.tag}`
+      );
     }
   }
 });
@@ -184,18 +232,29 @@ client.on("messageUpdate", (msgOld, msgNew) => {
   ];
 
   if (checkMessage(lowercaseNewMessage) && !checkMessage(lowercaseOldMessage)) {
-    let userData = data.find((element) => element.user && element.user.userID == msgNew.author.id);
+    let userData = data.find(
+      (element) => element.user && element.user.userID == msgNew.author.id
+    );
 
     if (userData) {
       userData.user.score += 1;
-      console.log(`Message containing the n-word got editted : ${msgNew.author.tag}, adding +1`);
+      console.log(
+        `Message containing the n-word got editted : ${msgNew.author.tag}, adding +1`
+      );
     }
-  } else if (!checkMessage(lowercaseNewMessage) && checkMessage(lowercaseOldMessage)) {
-    let userData = data.find((element) => element.user && element.user.userID == msgNew.author.id);
+  } else if (
+    !checkMessage(lowercaseNewMessage) &&
+    checkMessage(lowercaseOldMessage)
+  ) {
+    let userData = data.find(
+      (element) => element.user && element.user.userID == msgNew.author.id
+    );
 
     if (userData) {
       userData.user.score -= 1;
-      console.log(`Message containing the n-word got editted : ${msgNew.author.tag}, adding -1`);
+      console.log(
+        `Message containing the n-word got editted : ${msgNew.author.tag}, adding -1`
+      );
     }
   }
 });
@@ -206,14 +265,18 @@ function milestoneFunction() {
       let guild = client.guilds.cache.get(process.env.GUILD_ID.toString());
       let createEmbed = () => {
         return new EmbedBuilder()
-          .setTitle(`The ${nwordusages.toString()} niggas milestone has been reached!`)
+          .setTitle(
+            `The ${nwordusages.toString()} niggas milestone has been reached!`
+          )
           .setThumbnail(guild.iconURL ? guild.iconURL() : "")
           .setTimestamp()
           .setColor("Aqua")
           .setDescription("Keep it up guys");
       };
 
-      let firstChannel = guild.channels.cache.find((ch) => ch.name.includes("general"));
+      let firstChannel = guild.channels.cache.find((ch) =>
+        ch.name.includes("general")
+      );
 
       firstChannel.send({ embeds: [createEmbed()] });
     } catch (err) {
@@ -258,7 +321,10 @@ function milestoneFunction() {
 })();
 
 client.on("interactionCreate", (interaction) => {
-  if (interaction.isChatInputCommand() && interaction.commandName == "rleaderboard") {
+  if (
+    interaction.isChatInputCommand() &&
+    interaction.commandName == "rleaderboard"
+  ) {
     if (
       cooldownCommand1 >= Date.now() - commandCooldownInSec * 1000 &&
       interaction.channelId != process.env.BOT_COMMS_CHANNEL_ID
@@ -308,8 +374,14 @@ client.on("interactionCreate", (interaction) => {
         })
         .setFooter({
           text: `Please use this command again in ${commandCooldownInSec}s   -   You have said the n-word ${
-            dataOnThisUser && dataOnThisUser.user ? dataOnThisUser.user.score.toString() : "0"
-          } time${dataOnThisUser.user.score && dataOnThisUser.user.score > 1 ? "s" : ""}`,
+            dataOnThisUser && dataOnThisUser.user
+              ? dataOnThisUser.user.score.toString()
+              : "0"
+          } time${
+            dataOnThisUser.user.score && dataOnThisUser.user.score > 1
+              ? "s"
+              : ""
+          }`,
           iconURL: client.user.defaultAvatarURL,
         })
         .setTimestamp()
@@ -338,9 +410,12 @@ client.on("interactionCreate", (interaction) => {
     const filter = (i) => {
       if (i.user.id === interaction.user.id) return true;
 
-      console.log(`${i.user.tag} tried using buttons on a command used by ${interaction.user.tag}`);
+      console.log(
+        `${i.user.tag} tried using buttons on a command used by ${interaction.user.tag}`
+      );
       i.reply({
-        content: "Bitchass you gotta run the /rleaderboard command to use the buttons",
+        content:
+          "Bitchass you gotta run the /rleaderboard command to use the buttons",
         ephemeral: true,
       });
 
@@ -353,21 +428,31 @@ client.on("interactionCreate", (interaction) => {
     });
 
     interaction
-      .reply({ embeds: [createEmbed(1, getFields(1))], components: [createActionRow("button1")] })
+      .reply({
+        embeds: [createEmbed(1, getFields(1))],
+        components: [createActionRow("button1")],
+      })
       .catch((err) => console.log("Couldn't send embed on command 1 : ", err))
       .finally(() => {
         try {
           collector.on("collect", async (i) => {
             let e = i.message.embeds[0];
-            let page = parseInt(e.data.title ? e.data.title.replace(/[^0-9]/g, "") : 1);
+            let page = parseInt(
+              e.data.title ? e.data.title.replace(/[^0-9]/g, "") : 1
+            );
             let buttonClicked = i.customId;
             let updatedPageValue = page + (buttonClicked == "button1" ? -1 : 1);
             let buttonToGreyOut = updatedPageValue > 1 ? "none" : "button1";
-            if (getFields(updatedPageValue + 1).length == 0 && buttonToGreyOut != "button1")
+            if (
+              getFields(updatedPageValue + 1).length == 0 &&
+              buttonToGreyOut != "button1"
+            )
               buttonToGreyOut = "button2";
 
             await i.update({
-              embeds: [createEmbed(updatedPageValue, getFields(updatedPageValue))],
+              embeds: [
+                createEmbed(updatedPageValue, getFields(updatedPageValue)),
+              ],
               components: [createActionRow(buttonToGreyOut)],
             });
           });
@@ -375,7 +460,10 @@ client.on("interactionCreate", (interaction) => {
           console.log("Error occured at button collector : ", err);
         }
       });
-  } else if (interaction.isChatInputCommand() && interaction.commandName == "rranking") {
+  } else if (
+    interaction.isChatInputCommand() &&
+    interaction.commandName == "rranking"
+  ) {
     if (
       cooldownCommand2 >= Date.now() - commandCooldownInSec * 1000 &&
       interaction.channelId != process.env.BOT_COMMS_CHANNEL_ID
@@ -396,12 +484,18 @@ client.on("interactionCreate", (interaction) => {
     let descriptionString = "";
     let place = newData.findIndex((element) => {
       if (!element.user) return false;
-      return element.user.userID == (nonselfUser ? nonselfUser.user.id : interaction.user.id);
+      return (
+        element.user.userID ==
+        (nonselfUser ? nonselfUser.user.id : interaction.user.id)
+      );
     });
 
     let dataOnThisUser = data.find((element) => {
       if (!element.user) return false;
-      return element.user.userID == (nonselfUser ? nonselfUser.user.id : interaction.user.id);
+      return (
+        element.user.userID ==
+        (nonselfUser ? nonselfUser.user.id : interaction.user.id)
+      );
     });
 
     if (!dataOnThisUser || !dataOnThisUser.user) {
@@ -412,9 +506,13 @@ client.on("interactionCreate", (interaction) => {
           place + 1
         ).toString()}** place! You have said the n-word a whopping **${
           dataOnThisUser.user.score ? dataOnThisUser.user.score.toString() : "0"
-        }** time${dataOnThisUser.user.score && dataOnThisUser.user.score > 1 ? "s" : ""}.
+        }** time${
+          dataOnThisUser.user.score && dataOnThisUser.user.score > 1 ? "s" : ""
+        }.
                 \n You are just behind ${
-                  "<@!" + ((newData[place - 1] || []).user || []).userID + ">" || "nobody lol"
+                  "<@!" +
+                    ((newData[place - 1] || []).user || []).userID +
+                    ">" || "nobody lol"
                 }`;
       } else {
         descriptionString = `youre a zaza addict bro you have made to the **#1** place! You have said the n-word a whopping ${
@@ -431,7 +529,9 @@ client.on("interactionCreate", (interaction) => {
       )
       .setAuthor({
         name: nonselfUser ? nonselfUser.user.tag : interaction.user.tag,
-        iconURL: nonselfUser ? nonselfUser.user.avatarURL() : interaction.user.avatarURL(),
+        iconURL: nonselfUser
+          ? nonselfUser.user.avatarURL()
+          : interaction.user.avatarURL(),
       })
       .setFooter({
         text: `Please use this command again in ${commandCooldownInSec}s`,
@@ -469,9 +569,15 @@ client.on("interactionCreate", (interaction) => {
 
   try {
     console.log("Started refreshing application (/) commands.");
-    await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID), {
-      body: commands,
-    });
+    await rest.put(
+      Routes.applicationGuildCommands(
+        process.env.CLIENT_ID,
+        process.env.GUILD_ID
+      ),
+      {
+        body: commands,
+      }
+    );
   } catch (err) {
     console.log(err);
   }
