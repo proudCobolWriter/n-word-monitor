@@ -178,6 +178,8 @@ client.on("messageCreate", (msg) => {
           dataOnThisUser.user
         ) {
           if (userData.user.score - 1 == dataOnThisUser.user.score) {
+            if (place > 4) return;
+            
             msg
               .reply(
                 `Congrats on having said the n-word more times than <@${dataOnThisUser.user.userID}>`
@@ -523,7 +525,7 @@ client.on("interactionCreate", (interaction) => {
 
     let embed2 = new EmbedBuilder()
       .setTitle(
-        `Your n-word prestige: ${
+        `Your rizz: ${
           !dataOnThisUser ? "0" : (dataOnThisUser.user.score * 3.5).toString()
         }`
       )
