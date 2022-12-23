@@ -1,1 +1,1 @@
-# n-word-monitor
+# N-word monitor
