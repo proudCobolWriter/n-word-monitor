@@ -6,13 +6,13 @@
     "winston": "^3.8.2"
   },
   "name": "n-word-monitor",
-  "version": "1.0.0",
+  "version": "6.9.0",
   "main": "index.js",
   "scripts": {
     "test": "node index.js"
   },
   "keywords": [],
-  "author": "",
+  "author": "Me",
   "license": "ISC",
-  "description": ""
+  "description": "A bot that monitors the usage of the n-word"
 }
