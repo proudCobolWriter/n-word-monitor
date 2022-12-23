@@ -1,7 +1,9 @@
 // Prettified using prettier.io
 require("dotenv").config({ path: ".env" });
 
+// Dependencies
 const fs = require("fs");
+const winston = require("winston");
 const { REST } = require("@discordjs/rest");
 const {
   Client,
@@ -13,8 +15,8 @@ const {
   ButtonBuilder,
   ButtonStyle,
 } = require("discord.js");
+const { env } = require("process");
 
-const winston = require("winston");
 const client = new Client({ intents: 36481 });
 const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
@@ -23,34 +25,39 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 const logger = winston.createLogger({
   defaultMeta: { service: "user-service" },
   exitOnError: false,
+  colorize: true,
   transports: [
     new winston.transports.File({ filename: "logs/combined.log" }),
     new winston.transports.Console(),
   ],
   format: winston.format.combine(
-    winston.format.label({
-      label: "BOT-LOGS",
-    }),
     winston.format.timestamp({
       format: "MMM-DD-YYYY HH:mm:ss",
     }),
-    winston.format.printf(
-      (info) =>
-        `${info.level}: ${info.label}: ${[info.timestamp]}: ${info.message}`
-    )
+    winston.format.colorize(),
+    winston.format.printf(({ level, message, timestamp, stack }) => {
+      if (stack) {
+        return `${level}: BOT-LOGS: ${timestamp}: ${stack}`;
+      }
+      return `${level}: BOT-LOGS: ${timestamp}: ${message}`;
+    })
   ),
 });
 
 console.log = (d) => {
-    logger.info(d);
+  logger.info(d);
+};
+
+console.error = (d) => {
+  logger.error(new Error(d));
 };
 
 // Constants
 
 const filePath = "db.json";
-const intervalDelayInSec = 15;
-const commandCooldownInSec = 10;
-const coooldownMessagesInSec = 30;
+const intervalDelay = 15e3;
+const commandCooldown = 10e3;
+const coooldownMessages = 30e3;
 
 // Data storage
 
@@ -67,10 +74,13 @@ let cooldownCommand2 = 0;
 
 // Create user object
 
-function Post(userID, score) {
+function User(userID, score, scoreAfterMidnight) {
   this.user = {
-    userID: userID || -1,
-    score: score || 0,
+    userID: userID || -1, // discord user snowflake id
+    score: score || 0, // n-word occurrences
+    scoreAfterMidnight: scoreAfterMidnight || 0, // n-word occurrences this day
+    day: new Date().getUTCDate(), // date "scoreAfterMidnight" corresponds to
+    month: new Date().getUTCMonth(), // date "scoreAfterMidnight" corresponds to
   };
 }
 
@@ -121,7 +131,7 @@ function setDiscordPresence() {
       status: "online",
     });
   }
-  console.log("Changed bot's rich presence");
+  console.log("Successfully set bot's presence");
 }
 
 function checkMessage(lowercaseMessage) {
@@ -132,6 +142,26 @@ function checkMessage(lowercaseMessage) {
     lowercaseMessage.includes("nigg") ||
     lowercaseMessage.includes("negro")
   );
+}
+
+function scoreAfterMidnightUpdate(userData, removing) {
+  if (
+    userData.user.scoreAfterMidnight != undefined &&
+    userData.user.day != undefined &&
+    userData.user.month != undefined
+  ) {
+    if (
+      userData.user.day != new Date().getUTCDate() ||
+      userData.user.month != new Date().getUTCMonth()
+    ) {
+      console.log("Resetted n-word count : a new day has passed");
+      userData.user.scoreAfterMidnight = removing ? 0 : 1;
+      userData.user.day = new Date().getUTCDate();
+      userData.user.month = new Date().getUTCMonth();
+    } else {
+      userData.user.scoreAfterMidnight += removing ? -1 : 1;
+    }
+  }
 }
 
 client.on("ready", () => {
@@ -147,22 +177,26 @@ client.on("messageCreate", (msg) => {
       (element) => element.user && element.user.userID == msg.author.id
     );
 
-    if (userData) {
+    if (userData && userData.user) {
       if (
         msgCooldownData.has(msg.author.id) &&
-        msgCooldownData.get(msg.author.id) >=
-          Date.now() - coooldownMessagesInSec * 1000
+        msgCooldownData.get(msg.author.id) >= Date.now() - coooldownMessages
       )
         return;
+
       userData.user.score += 1;
       msgCooldownData.set(msg.author.id, Date.now());
+      scoreAfterMidnightUpdate(userData, false);
 
       // Leveling up related messages
       try {
         let newData = [...(data || [])].sort((a, b) => {
           if (!a.user) return 1;
           if (!b.user) return -1;
-          return (b.user.score || 0) - (a.user.score || 0);
+          return (
+            (b.user.score != undefined ? b.user.score : 0) -
+            (a.user.score != undefined ? a.user.score : 0)
+          );
         }); // returns the sorted array
 
         let place = newData.findIndex((element) => {
@@ -173,27 +207,27 @@ client.on("messageCreate", (msg) => {
         let dataOnThisUser = newData[place + 1];
 
         if (
-          dataOnThisUser.user.score > 2 &&
           dataOnThisUser &&
-          dataOnThisUser.user
+          dataOnThisUser.user &&
+          dataOnThisUser.user.score > 2
         ) {
           if (userData.user.score - 1 == dataOnThisUser.user.score) {
             if (place > 4) return;
-            
+
             msg
               .reply(
                 `Congrats on having said the n-word more times than <@${dataOnThisUser.user.userID}>`
               )
               .then(() => {
                 console.log("User surpassed someone");
-              }); //msg.delete()
+              });
           }
         }
       } catch (err) {
         console.log(err);
       }
     } else {
-      data.push(new Post(msg.author.id, 1));
+      data.push(new User(msg.author.id, 1, 1));
     }
 
     changed = true;
@@ -240,6 +274,7 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 
     if (userData) {
       userData.user.score += 1;
+      scoreAfterMidnightUpdate(userData, false);
       console.log(
         `Message containing the n-word got editted : ${msgNew.author.tag}, adding +1`
       );
@@ -254,6 +289,7 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 
     if (userData) {
       userData.user.score -= 1;
+      scoreAfterMidnightUpdate(userData, true);
       console.log(
         `Message containing the n-word got editted : ${msgNew.author.tag}, adding -1`
       );
@@ -290,7 +326,7 @@ function milestoneFunction() {
 (() => {
   data = readJSON();
   if (!data || data.length == 0) {
-    throw "Data is wrong";
+    throw "Database is either wrong or empty";
   }
 
   let updateNwordUsages = function () {
@@ -317,7 +353,7 @@ function milestoneFunction() {
         console.log(err);
       }
     },
-    intervalDelayInSec * 1000,
+    intervalDelay,
     writeToJSON
   );
 })();
@@ -328,10 +364,10 @@ client.on("interactionCreate", (interaction) => {
     interaction.commandName == "rleaderboard"
   ) {
     if (
-      cooldownCommand1 >= Date.now() - commandCooldownInSec * 1000 &&
+      cooldownCommand1 >= Date.now() - commandCooldown &&
       interaction.channelId != process.env.BOT_COMMS_CHANNEL_ID
     ) {
-      console.log("attention cooldown");
+      console.log("Attention cooldown command1");
       return;
     }
     cooldownCommand1 = Date.now();
@@ -339,7 +375,10 @@ client.on("interactionCreate", (interaction) => {
     let newData = [...(data || [])].sort((a, b) => {
       if (!a.user) return 1;
       if (!b.user) return -1;
-      return (b.user.score || 0) - (a.user.score || 0);
+      return (
+        (b.user.score != undefined ? b.user.score : 0) -
+        (a.user.score != undefined ? a.user.score : 0)
+      );
     }); // returns the sorted array
 
     let dataOnThisUser = newData.find((element) => {
@@ -375,7 +414,9 @@ client.on("interactionCreate", (interaction) => {
           iconURL: interaction.user.avatarURL(),
         })
         .setFooter({
-          text: `Please use this command again in ${commandCooldownInSec}s   -   You have said the n-word ${
+          text: `You can use this command again in ${Math.floor(
+            commandCooldown / 1000
+          )}s   -   You have said the n-word ${
             dataOnThisUser && dataOnThisUser.user
               ? dataOnThisUser.user.score.toString()
               : "0"
@@ -426,7 +467,7 @@ client.on("interactionCreate", (interaction) => {
 
     const collector = interaction.channel.createMessageComponentCollector({
       filter,
-      time: 300 * 1000,
+      time: 300e3,
     });
 
     interaction
@@ -467,10 +508,10 @@ client.on("interactionCreate", (interaction) => {
     interaction.commandName == "rranking"
   ) {
     if (
-      cooldownCommand2 >= Date.now() - commandCooldownInSec * 1000 &&
+      cooldownCommand2 >= Date.now() - commandCooldown &&
       interaction.channelId != process.env.BOT_COMMS_CHANNEL_ID
     ) {
-      console.log("attention cooldown");
+      console.log("Attention cooldown command2");
       return;
     }
     cooldownCommand2 = Date.now();
@@ -480,7 +521,10 @@ client.on("interactionCreate", (interaction) => {
     let newData = [...(data || [])].sort((a, b) => {
       if (!a.user) return 1;
       if (!b.user) return -1;
-      return (b.user.score || 0) - (a.user.score || 0);
+      return (
+        (b.user.score != undefined ? b.user.score : 0) -
+        (a.user.score != undefined ? a.user.score : 0)
+      );
     }); // returns the sorted array
 
     let descriptionString = "";
@@ -507,7 +551,9 @@ client.on("interactionCreate", (interaction) => {
         descriptionString = `Congrats for having made it up to the **#${(
           place + 1
         ).toString()}** place! You have said the n-word a whopping **${
-          dataOnThisUser.user.score ? dataOnThisUser.user.score.toString() : "0"
+          dataOnThisUser.user.score != undefined
+            ? dataOnThisUser.user.score.toString()
+            : "0"
         }** time${
           dataOnThisUser.user.score && dataOnThisUser.user.score > 1 ? "s" : ""
         }.
@@ -518,8 +564,34 @@ client.on("interactionCreate", (interaction) => {
                 }`;
       } else {
         descriptionString = `youre a zaza addict bro you have made to the **#1** place! You have said the n-word a whopping ${
-          dataOnThisUser.user.score ? dataOnThisUser.user.score.toString() : "0"
+          dataOnThisUser.user.score != undefined
+            ? dataOnThisUser.user.score.toString()
+            : "0"
         } times.`;
+      }
+    }
+
+    let scoreAfterMidnight = 0;
+    if (
+      dataOnThisUser.user.scoreAfterMidnight != undefined &&
+      dataOnThisUser.user.day != undefined &&
+      dataOnThisUser.user.month != undefined
+    ) {
+      if (
+        dataOnThisUser.user.day != new Date().getUTCDate() ||
+        dataOnThisUser.user.month != new Date().getUTCMonth()
+      ) {
+        console.log("Resetted n-word count : a new day has passed");
+        dataOnThisUser.user.scoreAfterMidnight = 0;
+        dataOnThisUser.user.day = new Date().getUTCDate();
+        dataOnThisUser.user.month = new Date().getUTCMonth();
+        scoreAfterMidnight = 0;
+      } else {
+        scoreAfterMidnight = dataOnThisUser.user.scoreAfterMidnight;
+      }
+    } else {
+      if (dataOnThisUser && dataOnThisUser.user) {
+        console.log("Data is missing on day and scoreAfterMidnight keys");
       }
     }
 
@@ -527,8 +599,8 @@ client.on("interactionCreate", (interaction) => {
       .setTitle(
         `Your rizz: ${
           !dataOnThisUser ? "0" : (dataOnThisUser.user.score * 3.5).toString()
-        }`
-      )
+        } bitches/night`
+      ) // n-word prestige
       .setAuthor({
         name: nonselfUser ? nonselfUser.user.tag : interaction.user.tag,
         iconURL: nonselfUser
@@ -536,12 +608,18 @@ client.on("interactionCreate", (interaction) => {
           : interaction.user.avatarURL(),
       })
       .setFooter({
-        text: `Please use this command again in ${commandCooldownInSec}s`,
+        text: `You can use this command again in ${Math.floor(
+          commandCooldown / 1000
+        )}s`,
         iconURL: client.user.defaultAvatarURL,
       })
       .setTimestamp()
       .setColor("Greyple")
-      .setDescription(descriptionString);
+      .setDescription(
+        `${descriptionString}\n\n**You have said the n-word** ***__${scoreAfterMidnight} time${
+          scoreAfterMidnight > 1 ? "s" : ""
+        }__*** **today**`
+      );
 
     interaction
       .reply({ embeds: [embed2] })
@@ -585,4 +663,8 @@ client.on("interactionCreate", (interaction) => {
   }
 })();
 
-client.login(process.env.TOKEN);
+
+
+
+
+client.login(process.env.TOKEN).catch(console.error);
