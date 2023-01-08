@@ -134,7 +134,7 @@ function setDiscordPresence() {
 }
 
 function checkMessage(lowercaseMessage) {
-  const explicitWords = JSON.parse(process.env.EXPLICIT_WORDS);
+  const explicitWords = process.env.EXPLICIT_WORDS.split(",");
   const isExplicit = explicitWords.some((word) =>
     lowercaseMessage.includes(word)
   );
