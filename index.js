@@ -1,4 +1,3 @@
-// Prettified using prettier.io
 require("dotenv").config({ path: ".env" });
 
 // Dependencies
@@ -135,13 +134,12 @@ function setDiscordPresence() {
 }
 
 function checkMessage(lowercaseMessage) {
-  return (
-    lowercaseMessage.includes("nigger") ||
-    lowercaseMessage.includes("nigga") ||
-    lowercaseMessage.includes("nickgurr") ||
-    lowercaseMessage.includes("nigg") ||
-    lowercaseMessage.includes("negro")
+  const explicitWords = JSON.parse(process.env.EXPLICIT_WORDS);
+  const isExplicit = explicitWords.some((word) =>
+    lowercaseMessage.includes(word)
   );
+
+  return isExplicit;
 }
 
 function scoreAfterMidnightUpdate(userData, removing) {
@@ -304,7 +302,7 @@ function milestoneFunction() {
       let createEmbed = () => {
         return new EmbedBuilder()
           .setTitle(
-            `The ${nwordusages.toString()} niggas milestone has been reached!`
+            `The ${nwordusages.toString()} ${process.env.MILESTONE_MESSAGE}`
           )
           .setThumbnail(guild.iconURL ? guild.iconURL() : "")
           .setTimestamp()
@@ -662,9 +660,5 @@ client.on("interactionCreate", (interaction) => {
     console.log(err);
   }
 })();
-
-
-
-
 
 client.login(process.env.TOKEN).catch(console.error);
