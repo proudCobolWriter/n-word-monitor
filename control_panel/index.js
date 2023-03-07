@@ -121,11 +121,13 @@ app.get("/", (request, response) => {
 });
 
 app.use("/", express.static(path.join(__dirname, "shared")));
-app.listen(parseInt(process.env.HOST_PORT), (error) => {
-	if (error) console.error(error);
+app.listen(parseInt(process.env.HOST_PORT), () => {
 	console.log(
 		`⚡ Server is running on ${process.env.HOST_URL}:${process.env.HOST_PORT}`
 	);
+}).on("error", (error) => {
+	console.error("Webserver has encountered an error while loading");
+	console.error(error);
 });
 
 // Exported function(s)
