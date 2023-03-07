@@ -1,0 +1,10 @@
+**/node_modules
+**/logs
+
+LICENSE
+
+.md
+.env
+.json
+.prettierignore
+.prettierrc

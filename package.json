@@ -1,0 +1,29 @@
+{
+	"dependencies": {
+		"@discordjs/rest": "^1.3.0",
+		"axios": "^1.3.4",
+		"discord.js": "^14.6.0",
+		"dotenv": "^16.0.3",
+		"express": "^4.18.2",
+		"geoip-lite": "^1.4.7",
+		"winston": "^3.8.2"
+	},
+	"name": "n-word-monitor",
+	"version": "6.9.0",
+	"main": "index.js",
+	"scripts": {
+		"test": "node index.js",
+		"pretty": "npx prettier --write .",
+		"validate": "node validate_db.js"
+	},
+	"keywords": [
+		"Discord bot",
+		"Discord.js"
+	],
+	"author": "Me",
+	"license": "ISC",
+	"description": "A bot that monitors the usage of the n-word to help admins curb racism on their servers.",
+	"devDependencies": {
+		"object-fill-missing-keys": "^8.1.0"
+	}
+}

@@ -1,0 +1,204 @@
+/* General rules */
+
+:root {
+	--bg-blur-size: 5px;
+}
+
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: Helvetica, sans-serif;
+	overflow: hidden;
+}
+
+/* Element specific rules */
+
+.background-container {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 100%;
+	height: 100%;
+}
+
+.background-container video {
+	min-width: 100%;
+	min-height: 100%;
+
+	-webkit-filter: blur(var(--bg-blur-size));
+	-moz-filter: blur(var(--bg-blur-size));
+	-o-filter: blur(var(--bg-blur-size));
+	-ms-filter: blur(var(--bg-blur-size));
+	filter: blur(var(--bg-blur-size));
+	object-fit: cover;
+
+	width: auto;
+	height: auto;
+
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) scale(1.05);
+
+	z-index: -10;
+}
+
+.background-container p {
+	color: white;
+	font-size: 0.85em;
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	margin: 0 4px 4px 0;
+	z-index: 1;
+}
+
+.background-container p a {
+	color: rgb(37, 127, 187);
+}
+
+.main-wrapper {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+#menu1 {
+	position: relative;
+	width: 75vw;
+	min-width: 300px;
+	max-width: 500px;
+	background: rgba(20, 20, 20, 0.5);
+	border-radius: 15px;
+	padding: 10px;
+	backdrop-filter: blur(15px);
+	border-width: 3px;
+	border-style: solid;
+	border-color: rgba(20, 20, 20, 0.7);
+	box-shadow: 0px 0px 8px #ffffff;
+}
+
+#menu1 h1,
+#menu1 h2 {
+	text-align: center;
+	-webkit-text-stroke-color: white;
+}
+
+.leaderboard-element {
+	height: 70px;
+	background-color: rgba(20, 20, 20, 0.5);
+	margin-top: 10px;
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	box-shadow: 2px -3px 10px rgba(255, 255, 255, 0.548);
+}
+
+.leaderboard-element img {
+	height: inherit;
+	padding: 7px;
+	border-radius: 100%;
+	/*box-shadow: 2px -1px 3px rgba(255, 255, 255, 0.548); <-- interesting effect but weird still */
+}
+
+.leaderboard-element div {
+	flex-wrap: wrap;
+	flex-shrink: 0;
+}
+
+.leaderboard-element p {
+	margin-left: 5px;
+	color: white;
+	font-size: max(min(2.9cqw, 20px), 10px);
+}
+
+/*.leaderboard-element:nth-child(odd) span,
+.leaderboard-element:nth-child(odd) h1 {
+	-webkit-text-stroke-width: 0.5px;
+	color: rgba(0, 0, 0, 0);
+}*/
+
+#leaderboard-1 h1,
+#leaderboard-1 span {
+	-webkit-text-stroke-width: 0.5px;
+	color: rgba(0, 0, 0, 0);
+}
+
+#leaderboard-1::before {
+	content: "";
+	margin: auto;
+	background: linear-gradient(
+		45deg,
+		#ff0000,
+		#ff7300,
+		#fffb00,
+		#48ff00,
+		#00ffd5,
+		#002bff,
+		#7a00ff,
+		#ff00c8,
+		#ff0000
+	);
+	position: absolute;
+	background-size: 400%;
+	z-index: -1;
+	filter: blur(5px);
+	width: calc(100% - 20px);
+	height: inherit;
+	animation: glowing 20s linear infinite;
+}
+
+@keyframes glowing {
+	0% {
+		background-position: 0 0;
+	}
+	50% {
+		background-position: 400% 0;
+	}
+	100% {
+		background-position: 0 0;
+	}
+}
+
+.leaderboard-place {
+	color: white;
+	padding: 0 10px 0 5px;
+	min-width: 50px;
+}
+
+.leaderboard-place span {
+	font-style: normal;
+	padding: 0;
+}
+
+/* */
+
+.non-draggable {
+	-webkit-user-drag: none;
+	user-select: none;
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+}
+
+.anton-font {
+	font-family: "Anton", sans-serif;
+}
+
+.italic {
+	font-style: italic;
+}
+
+.leaderboard-place::selection {
+	background: none;
+}
+
+:not(.leaderboard-place):is(span)::selection {
+	-webkit-text-stroke: 1px greenyellow;
+	color: rgba(0, 0, 0, 0);
+	background: rgba(0, 116, 255, 0.8);
+}

@@ -1,0 +1,15 @@
+# Folders
+
+logs/
+node_modules/
+.npm
+
+# Potentially sensitive files
+
+.env
+db.json
+db-backup.json
+
+# Other
+
+lang.json
