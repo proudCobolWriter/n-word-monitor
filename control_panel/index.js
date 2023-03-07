@@ -121,7 +121,7 @@ app.get("/", (request, response) => {
 });
 
 app.use("/", express.static(path.join(__dirname, "shared")));
-app.listen(process.env.HOST_PORT, (error) => {
+app.listen(parseInt(process.env.HOST_PORT), (error) => {
 	if (error) console.error(error);
 	console.log(
 		`⚡ Server is running on ${process.env.HOST_URL}:${process.env.HOST_PORT}`
