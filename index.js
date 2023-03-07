@@ -55,9 +55,9 @@ const logger = winston.createLogger({
 	),
 });
 
-/*console.log = (d) => {
+console.log = (d) => {
 	logger.info(d);
-};*/
+};
 
 console.error = (d) => {
 	logger.error(new Error(d));
