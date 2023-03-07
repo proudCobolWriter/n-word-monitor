@@ -739,7 +739,7 @@ client.on("interactionCreate", (interaction) => {
 					name: lang["l_0"][1].name,
 					value: lang["l_0"][1].value.format(
 						process.env.HOST_URL,
-						process.env.PORT || 3000
+						process.env.HOST_PORT
 					),
 					inline: true,
 				},
