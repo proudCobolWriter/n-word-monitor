@@ -12,9 +12,7 @@ const bot = require("../");
 
 const RETRY_INTERVAL = 3; // in case retrieving wallpapers fails
 const PIXABAY_API_URL = "https://pixabay.com/api/videos/";
-const MAXIMUM_LEADERBOARD_RESULTS = 3; //50;
-
-const SERVER_PORT = process.env.PORT || 3000;
+const MAXIMUM_LEADERBOARD_RESULTS = 3; // 50;
 
 // Prototype extensions
 
@@ -33,7 +31,7 @@ Array.prototype.random = function () {
 // Arrays
 
 let wallpapers = [];
-
+console.log(process.env.PORT);
 // Setting up the very primitive http server
 
 const app = express();
@@ -125,7 +123,7 @@ app.get("/", (request, response) => {
 app.use("/", express.static(path.join(__dirname, "shared")));
 app.listen(SERVER_PORT, (error) => {
 	if (error) console.error(error);
-	console.log(`⚡ Server is running on http://127.0.0.1:${SERVER_PORT}`);
+	console.log(`⚡ Server is running on ${process.env.HOST_URL}:${4026}`);
 });
 
 // Exported function(s)
