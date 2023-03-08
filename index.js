@@ -174,11 +174,11 @@ function setDiscordPresence() {
 	];
 
 	client.user.setPresence(presenceSettings[modulo]);
-
-	presenceIndex++;
 	console.log(
 		`Successfully set bot's presence ${presenceSettings[modulo].activities.name}`
 	);
+
+	presenceIndex++;
 }
 
 function checkMessage(lowercaseMessage) {
