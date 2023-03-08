@@ -136,31 +136,49 @@ function writeToJSON(p) {
 	});
 }
 
-let odd = false;
+let presenceIndex = 2; //0;
 function setDiscordPresence() {
-	odd = !odd;
-	if (odd) {
-		client.user.setPresence({
+	const modulo = presenceIndex % 3;
+	const presenceSettings = [
+		{
 			activities: [
 				{
-					name: lang.presence[0].format(nwordusages),
+					name: lang.presence[modulo].format(nwordusages),
 					type: ActivityType.Watching,
 				},
 			],
 			status: "idle",
-		});
-	} else {
-		client.user.setPresence({
+		},
+		{
 			activities: [
 				{
-					name: lang.presence[1],
+					name: lang.presence[modulo],
 					type: ActivityType.Competing,
 				},
 			],
 			status: "online",
-		});
-	}
-	console.log("Successfully set bot's presence");
+		},
+		{
+			activities: [
+				{
+					name: lang.presence[modulo],
+					type: ActivityType.Custom,
+					url: lang["l_0"][1].value.format(
+						process.env.HOST_URL,
+						process.env.HOST_PORT
+					),
+				},
+			],
+			status: "online",
+		},
+	];
+
+	client.user.setPresence(presenceSettings[modulo]);
+
+	presenceIndex++;
+	console.log(
+		`Successfully set bot's presence ${presenceSettings[modulo].activities.name}`
+	);
 }
 
 function checkMessage(lowercaseMessage) {
