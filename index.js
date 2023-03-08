@@ -33,35 +33,37 @@ const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
 // Logging setup
 
-const logger = winston.createLogger({
-	defaultMeta: { service: "user-service" },
-	exitOnError: false,
-	colorize: true,
-	transports: [
-		new winston.transports.File({ filename: "logs/combined.log" }),
-		new winston.transports.Console(),
-	],
-	format: winston.format.combine(
-		winston.format.timestamp({
-			format: "MMM-DD-YYYY HH:mm:ss",
-		}),
-		winston.format.colorize(),
-		winston.format.printf(({ level, message, timestamp, stack }) => {
-			if (stack) {
-				return `${level}: BOT-LOGS: ${timestamp}: ${stack}`;
-			}
-			return `${level}: BOT-LOGS: ${timestamp}: ${message}`;
-		})
-	),
-});
+if (process.env.IS_TESTING_ENV != "TRUE") {
+	const logger = winston.createLogger({
+		defaultMeta: { service: "user-service" },
+		exitOnError: false,
+		colorize: true,
+		transports: [
+			new winston.transports.File({ filename: "logs/combined.log" }),
+			new winston.transports.Console(),
+		],
+		format: winston.format.combine(
+			winston.format.timestamp({
+				format: "MMM-DD-YYYY HH:mm:ss",
+			}),
+			winston.format.colorize(),
+			winston.format.printf(({ level, message, timestamp, stack }) => {
+				if (stack) {
+					return `${level}: BOT-LOGS: ${timestamp}: ${stack}`;
+				}
+				return `${level}: BOT-LOGS: ${timestamp}: ${message}`;
+			})
+		),
+	});
 
-console.log = (d) => {
-	logger.info(d);
-};
+	console.log = (d) => {
+		logger.info(d);
+	};
 
-console.error = (d) => {
-	logger.error(new Error(d));
-};
+	console.error = (d) => {
+		logger.error(new Error(d));
+	};
+}
 
 // Constants
 
@@ -143,7 +145,7 @@ function setDiscordPresence() {
 		{
 			activities: [
 				{
-					name: lang.presence[modulo].format(nwordusages),
+					name: lang.presence[0].format(nwordusages),
 					type: ActivityType.Watching,
 				},
 			],
@@ -152,7 +154,7 @@ function setDiscordPresence() {
 		{
 			activities: [
 				{
-					name: lang.presence[modulo],
+					name: lang.presence[1],
 					type: ActivityType.Competing,
 				},
 			],
@@ -161,21 +163,17 @@ function setDiscordPresence() {
 		{
 			activities: [
 				{
-					name: lang.presence[modulo],
-					type: ActivityType.Custom,
-					url: lang["l_0"][1].value.format(
-						process.env.HOST_URL,
-						process.env.HOST_PORT
-					),
+					name: lang.presence[2],
+					type: ActivityType.Watching,
 				},
 			],
-			status: "online",
+			status: "dnd",
 		},
 	];
 
 	client.user.setPresence(presenceSettings[modulo]);
 	console.log(
-		`Successfully set bot's presence ${presenceSettings[modulo].activities.name}`
+		`Successfully set bot's presence (${presenceSettings[modulo].activities[0].name})`
 	);
 
 	presenceIndex++;
