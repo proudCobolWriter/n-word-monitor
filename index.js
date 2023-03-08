@@ -138,7 +138,7 @@ function writeToJSON(p) {
 	});
 }
 
-let presenceIndex = 2; //0;
+let presenceIndex = 0;
 function setDiscordPresence() {
 	const modulo = presenceIndex % 3;
 	const presenceSettings = [
