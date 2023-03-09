@@ -7,7 +7,6 @@ const winston = require("winston");
 const { REST } = require("@discordjs/rest");
 const {
 	Client,
-	GatewayIntentBits,
 	Routes,
 	EmbedBuilder,
 	ActivityType,
@@ -75,7 +74,8 @@ const coooldownMessages = 30e3;
 
 let data = [];
 let lang = {};
-let msgCooldownData = new Map();
+
+const msgCooldownData = new Map();
 
 // Command states
 
@@ -98,15 +98,14 @@ function User(userID, score, scoreAfterMidnight, userPfpURL, userUsername) {
 		scoreAfterMidnight: scoreAfterMidnight || 0, // occurrences this day
 		day: new Date().getUTCDate(), // date "scoreAfterMidnight" corresponds to
 		month: new Date().getUTCMonth(), // date "scoreAfterMidnight" corresponds to
-		userPFP: userPFP || "./favicon.ico", // the profile picture of the user (updated everytime the same user chats on the server)
 	};
 }
 
 // Prototype extensions
 
 String.prototype.format = function () {
-	a = this;
-	for (k in arguments) {
+	let a = this;
+	for (const k in arguments) {
 		a = a.replace("{" + k + "}", arguments[k]);
 	}
 	return a;
@@ -732,7 +731,9 @@ client.on("interactionCreate", (interaction) => {
 
 		interaction
 			.reply({ embeds: [embed2] })
-			.catch((err) => console.log("Couldn't send embed on command 2"));
+			.catch((err) =>
+				console.log("Couldn't send embed on command 2 : ", err)
+			);
 	} else if (
 		interaction.isChatInputCommand() &&
 		interaction.commandName == lang.commands[2].name
@@ -763,7 +764,9 @@ client.on("interactionCreate", (interaction) => {
 
 		interaction
 			.reply({ embeds: [embed3], ephemeral: true })
-			.catch((err) => console.log("Couldn't send embed on command 3"));
+			.catch((err) =>
+				console.log("Couldn't send embed on command 3 : ", err)
+			);
 	}
 });
 

@@ -12,7 +12,8 @@
 	"version": "6.9.0",
 	"main": "index.js",
 	"scripts": {
-		"test": "node index.js",
+		"dev": "nodemon .",
+		"test": "node .",
 		"pretty": "npx prettier --write .",
 		"validate": "node validate_db.js"
 	},
@@ -24,6 +25,7 @@
 	"license": "ISC",
 	"description": "A bot that monitors the usage of the n-word to help admins curb racism on their servers.",
 	"devDependencies": {
+		"eslint": "^8.35.0",
 		"object-fill-missing-keys": "^8.1.0"
 	}
 }

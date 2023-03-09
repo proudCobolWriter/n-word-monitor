@@ -1,10 +1,14 @@
-**/node_modules
-**/logs
+node_modules/
+logs/
+
+.git
+.npm
 
 LICENSE
 
 .md
 .env
-.json
 .prettierignore
 .prettierrc
+
+*.json

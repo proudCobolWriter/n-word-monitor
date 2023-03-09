@@ -17,8 +17,8 @@ const MAXIMUM_LEADERBOARD_RESULTS = 3; // 50;
 // Prototype extensions
 
 String.prototype.format = function () {
-	a = this;
-	for (k in arguments) {
+	let a = this;
+	for (const k in arguments) {
 		a = a.replace("{" + k + "}", arguments[k]);
 	}
 	return a;
@@ -55,7 +55,7 @@ app.get("/", (request, response) => {
 		let data = JSON.parse(JSON.stringify(botData));
 
 		data.forEach((element) => {
-			for (const [key, value] of Object.entries(element.user)) {
+			for (const [key] of Object.entries(element.user)) {
 				if (key != "userID" && key != "score" && key != "userMeta") {
 					delete element.user[key];
 				}
@@ -148,7 +148,7 @@ const retrievePopularWallpapers = function () {
 		.then((response) => {
 			console.log(`Retrieved ${response.data.hits.length} wallpapers!`);
 
-			for (const [key, value] of Object.entries(response.data.hits)) {
+			for (const [, value] of Object.entries(response.data.hits)) {
 				wallpapers.push(value.videos);
 			}
 		})
