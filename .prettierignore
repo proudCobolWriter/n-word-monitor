@@ -1,8 +1,8 @@
 node_modules/
 logs/
 
-.git
-.npm
+.git/
+.npm/
 
 LICENSE
 

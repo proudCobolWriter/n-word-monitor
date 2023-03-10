@@ -126,8 +126,9 @@ app.listen(parseInt(process.env.HOST_PORT), () => {
 		`⚡ Server is running on ${process.env.HOST_URL}:${process.env.HOST_PORT}`
 	);
 }).on("error", (error) => {
-	console.error("Webserver has encountered an error while loading");
-	console.error(error);
+	console.error(
+		`Webserver has encountered an error while loading : ${error}`
+	);
 });
 
 // Exported function(s)

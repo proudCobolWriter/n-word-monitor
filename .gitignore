@@ -3,8 +3,8 @@
 logs/
 node_modules/
 
-.git
-.npm
+.git/
+.npm/
 
 # Potentially sensitive files
 
@@ -14,4 +14,5 @@ db-backup.json
 
 # Other
 
+*.cache
 lang.json

@@ -1,13 +1,11 @@
-require("dotenv").config({ path: ".env" });
+require("dotenv").config();
 
 // Dependencies
 
 const fs = require("fs");
 const winston = require("winston");
-const { REST } = require("@discordjs/rest");
 const {
 	Client,
-	Routes,
 	EmbedBuilder,
 	ActivityType,
 	ActionRowBuilder,
@@ -28,17 +26,16 @@ botIntents.add(
 const client = new Client({
 	intents: botIntents,
 });
-const rest = new REST({ version: "10" }).setToken(process.env.TOKEN);
 
 // Logging setup
 
-if (process.env.IS_TESTING_ENV != "TRUE") {
+if (process.env.NODE_ENV === "production") {
 	const logger = winston.createLogger({
 		defaultMeta: { service: "user-service" },
 		exitOnError: false,
 		colorize: true,
 		transports: [
-			new winston.transports.File({ filename: "logs/combined.log" }),
+			new winston.transports.File({ filename: "./logs/combined.log" }),
 			new winston.transports.Console(),
 		],
 		format: winston.format.combine(
@@ -114,27 +111,25 @@ String.prototype.format = function () {
 // Functions and event handlers
 
 function readJSON(p) {
-	let result = fs.readFileSync(p);
+	let result = [];
 
 	try {
+		result = fs.readFileSync(p, "utf-8");
 		result = JSON.parse(result);
 	} catch {
-		result = [];
-		console.log("Caught an error while parsing");
+		console.log("Caught an error while parsing at path : " + p);
 	}
 
 	return result;
 }
 
 function writeToJSON(p) {
-	fs.writeFile(p, JSON.stringify(data, null, 2), (err) => {
-		if (err) {
-			console.log("There was an error during the writing");
-		} else {
-			console.log("The file was successfully written");
-			changed = false;
-		}
-	});
+	try {
+		fs.writeFileSync(p, JSON.stringify(data));
+		console.log("The file was successfully written");
+	} catch {
+		console.log("Caught an error while writing at path : " + p);
+	}
 }
 
 let presenceIndex = 0;
@@ -206,6 +201,77 @@ function scoreAfterMidnightUpdate(userData, removing) {
 		}
 	}
 }
+
+function milestoneFunction() {
+	if (nwordusages % 1000 == 0 && nwordusages != 0) {
+		try {
+			let guild = client.guilds.cache.get(
+				process.env.GUILD_ID.toString()
+			);
+
+			let createEmbed = () => {
+				return new EmbedBuilder()
+					.setTitle(lang["l_1"].title.format(nwordusages))
+					.setThumbnail(guild.iconURL ? guild.iconURL() : "")
+					.setTimestamp()
+					.setColor("Aqua")
+					.setDescription(lang["l_1"].description);
+			};
+
+			let firstChannel = guild.channels.cache.find((ch) =>
+				ch.name.includes("general")
+			);
+
+			if (firstChannel) {
+				firstChannel.send({ embeds: [createEmbed()] });
+			} else {
+				console.log("Couldn't find a general channel!");
+			}
+		} catch (err) {
+			console.log(err);
+		}
+	}
+}
+
+(() => {
+	data = readJSON("./db.json");
+	lang = readJSON("./lang.json");
+
+	if (!data || data.length == 0) {
+		throw "Database is either skewed or empty";
+	}
+
+	if (!lang || Object.keys(lang).length == 0) {
+		throw "Couldn't retrieve lang data";
+	}
+
+	let updateNwordUsages = function () {
+		nwordusages = 0;
+		data.forEach((element) => {
+			if (element && element.user && element.user.score > 0) {
+				nwordusages = nwordusages + (element.user.score || 0);
+			}
+		});
+	};
+	updateNwordUsages();
+
+	setInterval(() => {
+		try {
+			if (changed) {
+				writeToJSON("db.json");
+				changed = false;
+
+				updateNwordUsages();
+				setDiscordPresence();
+				milestoneFunction();
+			}
+		} catch (err) {
+			console.log(err);
+		}
+	}, intervalDelay);
+})();
+
+// Event listeners
 
 client.on("ready", async () => {
 	console.log(`Logged in as ${client.user.tag}!`);
@@ -386,72 +452,6 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 		}
 	}
 });
-
-function milestoneFunction() {
-	if (nwordusages % 1000 == 0 && nwordusages != 0) {
-		try {
-			let guild = client.guilds.cache.get(
-				process.env.GUILD_ID.toString()
-			);
-			let createEmbed = () => {
-				return new EmbedBuilder()
-					.setTitle(lang["l_1"].title.format(nwordusages))
-					.setThumbnail(guild.iconURL ? guild.iconURL() : "")
-					.setTimestamp()
-					.setColor("Aqua")
-					.setDescription(lang["l_1"].description);
-			};
-
-			let firstChannel = guild.channels.cache.find((ch) =>
-				ch.name.includes("general")
-			);
-
-			if (firstChannel) {
-				firstChannel.send({ embeds: [createEmbed()] });
-			} else {
-				console.log("Couldn't find a general channel!");
-			}
-		} catch (err) {
-			console.log(err);
-		}
-	}
-}
-
-(() => {
-	data = readJSON("db.json");
-	lang = readJSON("lang.json");
-
-	if (!data || data.length == 0) {
-		throw "Database is either skewed or empty";
-	}
-
-	if (!lang || Object.keys(lang).length == 0) {
-		throw "Couldn't retrieve lang data";
-	}
-
-	let updateNwordUsages = function () {
-		nwordusages = 0;
-		data.forEach((element) => {
-			if (element && element.user && element.user.score > 0) {
-				nwordusages = nwordusages + (element.user.score || 0);
-			}
-		});
-	};
-	updateNwordUsages();
-
-	setInterval(() => {
-		try {
-			if (changed) {
-				writeToJSON("db.json");
-				updateNwordUsages();
-				setDiscordPresence();
-				milestoneFunction();
-			}
-		} catch (err) {
-			console.log(err);
-		}
-	}, intervalDelay);
-})();
 
 client.on("interactionCreate", (interaction) => {
 	if (
@@ -770,38 +770,7 @@ client.on("interactionCreate", (interaction) => {
 	}
 });
 
-(async function setupSlashCommands() {
-	const commands = [
-		lang.commands[0],
-		{
-			...lang.commands[1],
-			options: [
-				{
-					name: "member",
-					description: "the person you want to look up",
-					type: 6,
-					required: false,
-				},
-			],
-		},
-		lang.commands[2],
-	];
-
-	try {
-		console.log("Started refreshing application (/) commands.");
-		await rest.put(
-			Routes.applicationGuildCommands(
-				process.env.CLIENT_ID,
-				process.env.GUILD_ID
-			),
-			{
-				body: commands,
-			}
-		);
-	} catch (err) {
-		console.log(err);
-	}
-})();
+// Exports and initialization
 
 exports.getData = () => {
 	return data;
@@ -819,6 +788,7 @@ exports.getGuildIconURL = () => {
 	}
 };
 
+import("./deploy.mjs");
 require("./control_panel/").init();
 
 client.login(process.env.TOKEN).catch(console.error);
