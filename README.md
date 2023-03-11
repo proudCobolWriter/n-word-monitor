@@ -16,7 +16,7 @@ BOT_COMMS_CHANNEL_ID="THE CHANNEL WHERE THE COOLDOWN DOESN'T APPLY FOR COMMANDS"
 
 EXPLICIT_WORDS = "Bad word n°1, bad word n°2, etc"
 
-PIXABAY_API_KEY = "PIXABAY REST API KEY (necessary to retrieve stock video wallpapers which are ran in the background in the bot panel)"
+PIXABAY_API_KEY = "PIXABAY REST API KEY (necessary to retrieve stock video wallpapers which are run in the background in the bot panel)"
 
 HOST_URL = "WEBSERVER URL"
 HOST_PORT = "WEBSERVER PORT"
@@ -24,7 +24,8 @@ HOST_PORT = "WEBSERVER PORT"
 
 ## Running the bot
 
-**bash** startup.sh
+The bot can be run by either running **startup.sh** or entering "**npm** run test"
+It is not meant for handling multiple guilds.
 
 ### OFFICIAL DOCUMENTATION
 
