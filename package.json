@@ -29,7 +29,7 @@
 	"license": "ISC",
 	"description": "A bot that monitors the usage of the n-word to help admins curb racism on their servers.",
 	"devDependencies": {
-		"eslint": "^8.35.0",
+		"eslint": "^8.36.0",
 		"object-fill-missing-keys": "^8.1.0"
 	}
 }
