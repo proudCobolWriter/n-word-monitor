@@ -7,7 +7,7 @@ git pull
 npm install
 
 # Print outdated packages
-echo -e "\033[0;31mOUTDATED \033[0mPACKAGES LIST:"
+echo "\033[0;31mOUTDATED \033[0mPACKAGES LIST:"
 npm outdated
 
 # Startup sequence
