@@ -1,5 +1,5 @@
 # Sync the files with the repo
-git clean  -d  -f .
+git reset --hard
 git fetch
 git pull
 
