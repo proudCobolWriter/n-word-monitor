@@ -12,9 +12,6 @@
 	"name": "n-word-monitor",
 	"version": "6.9.0",
 	"main": "./src/index.js",
-	"config": {
-		"NODE_ENV": "production"
-	},
 	"scripts": {
 		"dev": "nodemon .",
 		"test": "node .",
