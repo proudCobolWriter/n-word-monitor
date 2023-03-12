@@ -28,4 +28,4 @@ parsedData.forEach((element) => {
 	});
 });
 
-fs.writeFileSync(dbFilePath, JSON.stringify(parsedData));
+fs.writeFileSync(dbFilePath, JSON.stringify(parsedData, null, 4));

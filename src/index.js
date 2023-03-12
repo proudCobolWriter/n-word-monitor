@@ -125,7 +125,7 @@ function readJSON(p) {
 
 function writeToJSON(p) {
 	try {
-		fs.writeFileSync(p, JSON.stringify(data));
+		fs.writeFileSync(p, JSON.stringify(data, null, 4));
 		console.log("The file was successfully written");
 	} catch {
 		console.log("Caught an error while writing at path : " + p);
