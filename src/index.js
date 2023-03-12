@@ -677,6 +677,7 @@ client.on("interactionCreate", (interaction) => {
 
 		let scoreAfterMidnight = 0;
 		if (
+			dataOnThisUser != undefined &&
 			dataOnThisUser.user != undefined &&
 			dataOnThisUser.user.scoreAfterMidnight != undefined &&
 			dataOnThisUser.user.day != undefined &&
