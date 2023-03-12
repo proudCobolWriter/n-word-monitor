@@ -697,7 +697,7 @@ client.on("interactionCreate", (interaction) => {
 		} else {
 			if (dataOnThisUser && dataOnThisUser.user) {
 				console.log(
-					"Data is missing on day and scoreAfterMidnight keys"
+					`Data is potentially missing on "scoreAfterMidnight", "day" and "month" keys`
 				);
 			}
 		}
