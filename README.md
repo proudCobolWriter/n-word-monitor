@@ -24,8 +24,8 @@ HOST_PORT = "WEBSERVER PORT"
 
 ## Running the bot
 
-The bot can be run by either running **startup.sh** or entering "**npm** run test"
-It is not meant for handling multiple guilds.
+The bot can be run by either running **startup.sh** or entering "**npm** run test".
+It is not meant for handling multiple guilds as it was designed around one discord server in particular.
 
 ### OFFICIAL DOCUMENTATION
 
