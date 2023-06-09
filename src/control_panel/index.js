@@ -164,7 +164,6 @@ const retrievePopularWallpapers = function () {
 					continue;
 				wallpapers.push(value.videos);
 			}
-			console.log(response.data.hits);
 		})
 		.catch((error) => {
 			console.error(

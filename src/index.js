@@ -277,35 +277,46 @@ client.on("ready", async () => {
 	console.log(`Logged in as ${client.user.tag}!`);
 	if (nwordusages != 0) setDiscordPresence();
 
-	const refreshMemberProfiles = false; // use with caution, this might wipe profile picture/username from members who have left the server but remain on the leaderboard
+	// refresh members' profile pictures
 
-	if (refreshMemberProfiles) {
-		let guild = client.guilds.cache.get(process.env.GUILD_ID.toString());
+	const doRefresh = true;
 
-		if (guild)
-			try {
-				const members = await guild.members.fetch({ force: true });
+	if (doRefresh) {
+		const usersIds = Array.from(
+			data,
+			(element) => element.user && element.user.userID
+		);
 
-				members.forEach((member) => {
-					let userData = data.find(
-						(element) =>
-							element.user && element.user.userID == member.id
-					);
+		const result = await Promise.allSettled(
+			(() => {
+				const promises = [];
+				for (const k of usersIds) {
+					promises.push(client.users.fetch(k));
+				}
+				return promises;
+			})()
+		);
 
-					if (userData && userData.user) {
-						userData.user.userMeta.iconURL =
-							member.user.displayAvatarURL();
-						userData.user.userMeta.username = member.user.username;
-					}
-				});
+		for (const element of data) {
+			if (!element.user) continue;
 
-				console.log(
-					"Members' profiles have been successfuly refreshed"
-				);
-				changed = true;
-			} catch (err) {
-				console.error(err);
-			}
+			const fetchResult = result.find((x) => {
+				if (
+					x.status === "fulfilled" &&
+					x.value.id === element.user.userID
+				)
+					return x;
+			});
+
+			if (!fetchResult) continue;
+			if (!element.user.userMeta) element.user.userMeta = {};
+
+			element.user.userMeta["username"] = fetchResult.value.username;
+			element.user.userMeta["iconURL"] =
+				fetchResult.value.displayAvatarURL();
+		}
+
+		changed = true;
 	}
 });
 
