@@ -36,6 +36,8 @@ let wallpapers = [];
 
 const app = express();
 
+app.set("trust proxy", true);
+
 app.get("/", (request, response) => {
 	let baseHTML;
 
@@ -89,9 +91,7 @@ app.get("/", (request, response) => {
 			response.setHeader("Content-Type", "text/html");
 			response.send(baseHTML);
 
-			const ip = request.headers["x-forwarded-for"] || request.socket.remoteAddress;
-
-			const userRegion = lookup(ip);
+			const userRegion = lookup(request.ip);
 
 			console.log(
 				`✨ Successfuly sent back HTML (user region: ${
