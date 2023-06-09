@@ -282,6 +282,8 @@ client.on("ready", async () => {
 	const doRefresh = true;
 
 	if (doRefresh) {
+		const guild = client.guilds.cache.get(process.env.GUILD_ID.toString());
+
 		const usersIds = Array.from(
 			data,
 			(element) => element.user && element.user.userID
@@ -311,9 +313,25 @@ client.on("ready", async () => {
 			if (!fetchResult) continue;
 			if (!element.user.userMeta) element.user.userMeta = {};
 
-			element.user.userMeta["username"] = fetchResult.value.username;
-			element.user.userMeta["iconURL"] =
-				fetchResult.value.displayAvatarURL();
+			let [username, iconURL] = [
+				fetchResult.value.username,
+				fetchResult.value.displayAvatarURL(),
+			];
+
+			if (guild) {
+				try {
+					const member = await guild.members.fetch(
+						element.user.userID
+					);
+					if (member.nickname) username = member.nickname;
+				} catch (err) {
+					/* empty */
+				}
+			}
+
+			element.user.userMeta["username"] =
+				username.charAt(0).toUpperCase() + username.slice(1);
+			element.user.userMeta["iconURL"] = iconURL;
 		}
 
 		changed = true;
