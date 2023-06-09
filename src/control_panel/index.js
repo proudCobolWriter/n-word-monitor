@@ -150,8 +150,21 @@ const retrievePopularWallpapers = function () {
 			console.log(`Retrieved ${response.data.hits.length} wallpapers!`);
 
 			for (const [, value] of Object.entries(response.data.hits)) {
+				if (
+					[
+						48501, 48503, 45959, 6467, 6470, 27433,
+						12530 /* List of ignored wallpapers */,
+					].some((x) => x === value.id)
+				)
+					continue;
+				if (
+					value.tags.includes("love") ||
+					value.tags.includes("hearts")
+				)
+					continue;
 				wallpapers.push(value.videos);
 			}
+			console.log(response.data.hits);
 		})
 		.catch((error) => {
 			console.error(

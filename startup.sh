@@ -1,6 +1,5 @@
 # Sync the files with the repo
 git reset --hard
-git fetch
 git pull
 
 # Install node_modules in case it is missing
