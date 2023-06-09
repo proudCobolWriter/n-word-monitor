@@ -13,44 +13,14 @@
 		/>
 		<link rel="stylesheet" href="./page.css" />
 		<link rel="icon" href="./favicon.ico" type="image/x-icon" />
-
-		<script>
-			window.waitForElement = (selector) => {
-				return new Promise((resolve) => {
-					if (document.querySelector(selector)) {
-						return resolve(document.querySelector(selector));
-					}
-
-					const observer = new MutationObserver((mutations) => {
-						if (document.querySelector(selector)) {
-							resolve(document.querySelector(selector));
-							observer.disconnect();
-						}
-					});
-
-					observer.observe(document.body, {
-						childList: true,
-						subtree: true,
-					});
-				});
-			};
-
-			window.tiemoutSync = (secs) =>
-				new Promise((res) => setTimeout(res, secs * 1000));
-
-			window.onloadSync = (img) => {
-				new Promise((resolve, reject) => {
-					img.onload = () => resolve(img);
-					img.onerror = reject;
-				});
-			};
-		</script>
+		<script type="text/javascript" src="/scripts/windowUtil.js"></script>
 	</head>
 	<body>
 		<main hidden="true">
 			<span id="wallpapers-storage">{0}</span>
 			<span id="leaderboard-storage">{1}</span>
 			<span id="guild-icon">{2}</span>
+			<span id="item-text">{3}|{4}</span>
 		</main>
 		<div class="background-container">
 			<video autoplay loop muted plays-inline></video>
@@ -62,151 +32,8 @@
 				>
 			</p>
 		</div>
-		<script>
-			const video = document.querySelector(".background-container video");
-
-			Object.assign(video.style, {
-				opacity: 0,
-			});
-
-			const wallpaperData = document.querySelector(
-				"#wallpapers-storage"
-			).innerText;
-			const parsedWallpaperData = JSON.parse(wallpaperData);
-
-			const keys = Object.keys(parsedWallpaperData);
-
-			let chosenSize;
-			for (let i = 1; i < keys.length; i++) {
-				let value = parsedWallpaperData[keys[i]];
-
-				if (value.width <= 1920) {
-					if (!chosenSize) {
-						chosenSize = value;
-					} else if (chosenSize.width < value.width) {
-						chosenSize = value;
-					}
-				}
-			}
-
-			if (chosenSize) {
-				const videoSource = document.createElement("source");
-				videoSource.setAttribute("src", chosenSize.url);
-				videoSource.setAttribute("type", "video/mp4");
-
-				video.appendChild(videoSource);
-
-				video.addEventListener("loadeddata", () => {
-					video.animate([{ opacity: 0 }, { opacity: 1 }], {
-						duration: 0.5e3,
-						iterations: 1,
-						fill: "forwards",
-					});
-				});
-
-				videoSource.addEventListener("error", () => {
-					setTimeout(() => {
-						video.appendChild(videoSource);
-						console.warn(
-							"Video failed to load! Retrying in 1 second"
-						);
-					}, 1e3); // retry after 1 second if the loading failed
-				});
-			}
-		</script>
-		<script>
-			/*addEventListener("mousemove", (event) => {
-				const e = document.querySelectorAll(".leaderboard-element");
-				if (!e) return;
-
-				const [x, y] = [(event.clientX - window.innerWidth / 2) / (window.innerWidth / 2), (event.clientY - window.innerHeight / 2) / (window.innerHeight / 2)];
-
-				e.forEach((element) => {
-					Object.assign(element.style, {
-					["box-shadow"]: `${2.5 * x}px ${4.5 * y}px 10px rgba(255, 255, 255, 0.4)`
-				});
-				});
-			});*/
-
-			const userData = document.querySelector(
-				"#leaderboard-storage"
-			).innerText;
-			const parsedUserData = JSON.parse(userData);
-
-			if (parsedUserData && parsedUserData.length >= 3) {
-				waitForElement("#menu1").then(async (element) => {
-					for (let k = 1; k <= 3; k++) {
-						const frag = document.createDocumentFragment();
-						const thisUserData = parsedUserData[k - 1].user;
-
-						const newElement = document.createElement("div");
-						newElement.setAttribute("class", "leaderboard-element");
-						newElement.setAttribute("id", "leaderboard-" + k);
-						frag.appendChild(newElement);
-
-						const imageElement = document.createElement("img");
-
-						await onloadSync(imageElement);
-
-						imageElement.setAttribute(
-							"src",
-							thisUserData.userMeta.iconURL
-						);
-						imageElement.setAttribute("class", "non-draggable");
-						newElement.appendChild(imageElement);
-
-						const numberElement = document.createElement("h1");
-						const hashtagElement = document.createElement("span");
-
-						hashtagElement.innerText = "#";
-						hashtagElement.setAttribute(
-							"class",
-							"leaderboard-place anton-font"
-						);
-						numberElement.appendChild(hashtagElement);
-
-						numberElement.append(k);
-						numberElement.setAttribute(
-							"class",
-							"leaderboard-place anton-font italic"
-						);
-
-						const divElement = document.createElement("div");
-
-						newElement.appendChild(numberElement);
-						newElement.appendChild(divElement);
-
-						const text1 = document.createElement("p");
-						const text2 = document.createElement("p");
-
-						text1.innerHTML = `${thisUserData.userMeta.username}${
-							["👑", "🥈", "🥉"][k - 1]
-						}`;
-						text2.innerHTML = `{3}${thisUserData.score}{4}`;
-						text1.setAttribute("class", "anton-font italic");
-						text1.setAttribute("title", thisUserData.userID);
-						text2.setAttribute("class", "anton-font");
-
-						divElement.appendChild(text1);
-						divElement.appendChild(text2);
-
-						Object.assign(newElement.style, {
-							opacity: 0,
-						});
-
-						await tiemoutSync(0.5);
-
-						newElement.animate([{ opacity: 0 }, { opacity: 1 }], {
-							duration: 0.75e3,
-							iterations: 1,
-							fill: "forwards",
-						});
-
-						element.appendChild(frag);
-					}
-				});
-			}
-		</script>
+		<script type="text/javascript" src="/scripts/wallpaper.js"></script>
+		<script type="text/javascript" src="/scripts/main.js"></script>
 		<div class="main-wrapper">
 			<div id="menu1">
 				<h1 style="font-size: 1.9em; color: white; font-weight: 900">
@@ -251,7 +78,8 @@
 			href="https://github.com/proudCobolWriter/n-word-monitor"
 			class="github-corner"
 			aria-label="View source on GitHub"
-			><svg
+		>
+			<svg
 				width="80"
 				height="80"
 				viewBox="0 0 250 250"
@@ -279,7 +107,8 @@
 					d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z"
 					fill="currentColor"
 					class="octo-body"
-				></path></svg
+				></path>
+			</svg>
 			><style>
 				.github-corner:hover .octo-arm {
 					animation: octocat-wave 560ms ease-in-out;
@@ -306,7 +135,7 @@
 						animation: octocat-wave 560ms ease-in-out;
 					}
 				}
-			</style></a
-		>
+			</style>
+		</a>
 	</body>
 </html>

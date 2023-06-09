@@ -89,9 +89,7 @@ app.get("/", (request, response) => {
 			response.setHeader("Content-Type", "text/html");
 			response.send(baseHTML);
 
-			const ip =
-				request.headers["x-forwarded-for"] ||
-				request.connection.remoteAddress;
+			const ip = request.headers["x-forwarded-for"] || request.socket;
 
 			const userRegion = lookup(ip);
 
