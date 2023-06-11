@@ -346,8 +346,8 @@ client.on("messageCreate", (msg) => {
 	);
 
 	if (userData && userData.user) {
-		userData.user.userMeta.iconURL = msg.member.user.displayAvatarURL();
-		userData.user.userMeta.username = msg.member.user.username;
+		userData.user.userMeta.iconURL = msg.member.displayAvatarURL();
+		userData.user.userMeta.username = msg.member.displayName;
 	}
 
 	if (checkMessage(lowercaseMessage)) {
