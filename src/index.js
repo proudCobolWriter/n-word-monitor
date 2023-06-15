@@ -274,7 +274,7 @@ function milestoneFunction() {
 // Event listeners
 
 client.on("ready", async () => {
-	console.log(`Logged in as ${client.user.tag}!`);
+	console.log(`Logged in as ${client.user.username}!`);
 	if (nwordusages != 0) setDiscordPresence();
 
 	// refresh members' profile pictures
@@ -440,7 +440,9 @@ client.on("messageDelete", (msg) => {
 
 		if (userData) {
 			userData.user.score -= 1;
-			console.log(`Message got edited : ${msg.author.tag}, adding -1`);
+			console.log(
+				`Message got edited : ${msg.author.displayName}, adding -1`
+			);
 		}
 	}
 });
@@ -463,7 +465,9 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 			userData.user.score += 1;
 			scoreAfterMidnightUpdate(userData, false);
 
-			console.log(`Message got edited : ${msgNew.author.tag}, adding +1`);
+			console.log(
+				`Message got edited : ${msgNew.author.displayName}, adding +1`
+			);
 		}
 	} else if (
 		!checkMessage(lowercaseNewMessage) &&
@@ -477,7 +481,9 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 			userData.user.score -= 1;
 			scoreAfterMidnightUpdate(userData, true);
 
-			console.log(`Message got edited : ${msgNew.author.tag}, adding -1`);
+			console.log(
+				`Message got edited : ${msgNew.author.displayName}, adding -1`
+			);
 		}
 	}
 });
@@ -538,7 +544,7 @@ client.on("interactionCreate", (interaction) => {
 			return new EmbedBuilder()
 				.setTitle(lang["l_3"].format(page))
 				.setAuthor({
-					name: interaction.user.tag,
+					name: interaction.user.displayName,
 					iconURL: interaction.user.avatarURL(),
 				})
 				.setFooter({
@@ -581,7 +587,7 @@ client.on("interactionCreate", (interaction) => {
 			if (i.user.id === interaction.user.id) return true;
 
 			console.log(
-				`${i.user.tag} tried using buttons on a command used by ${interaction.user.tag}`
+				`${i.user.displayName} tried using buttons on a command used by ${interaction.user.displayName}`
 			);
 			i.reply({
 				content: lang["l_10"],
@@ -739,7 +745,9 @@ client.on("interactionCreate", (interaction) => {
 				)
 			) // prestige
 			.setAuthor({
-				name: nonselfUser ? nonselfUser.user.tag : interaction.user.tag,
+				name: nonselfUser
+					? nonselfUser.user.displayName
+					: interaction.user.displayName,
 				iconURL: nonselfUser
 					? nonselfUser.user.avatarURL()
 					: interaction.user.avatarURL(),
