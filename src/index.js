@@ -440,6 +440,9 @@ client.on("messageDelete", (msg) => {
 
 		if (userData) {
 			userData.user.score -= 1;
+			scoreAfterMidnightUpdate(userData, true);
+			changed = true;
+
 			console.log(
 				`Message got edited : ${msg.author.username}, adding -1`
 			);
@@ -464,6 +467,7 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 		if (userData) {
 			userData.user.score += 1;
 			scoreAfterMidnightUpdate(userData, false);
+			changed = true;
 
 			console.log(
 				`Message got edited : ${msgNew.author.username}, adding +1`
@@ -480,6 +484,7 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 		if (userData) {
 			userData.user.score -= 1;
 			scoreAfterMidnightUpdate(userData, true);
+			changed = true;
 
 			console.log(
 				`Message got edited : ${msgNew.author.username}, adding -1`
