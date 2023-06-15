@@ -441,7 +441,7 @@ client.on("messageDelete", (msg) => {
 		if (userData) {
 			userData.user.score -= 1;
 			console.log(
-				`Message got edited : ${msg.author.displayName}, adding -1`
+				`Message got edited : ${msg.author.username}, adding -1`
 			);
 		}
 	}
@@ -466,7 +466,7 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 			scoreAfterMidnightUpdate(userData, false);
 
 			console.log(
-				`Message got edited : ${msgNew.author.displayName}, adding +1`
+				`Message got edited : ${msgNew.author.username}, adding +1`
 			);
 		}
 	} else if (
@@ -482,7 +482,7 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 			scoreAfterMidnightUpdate(userData, true);
 
 			console.log(
-				`Message got edited : ${msgNew.author.displayName}, adding -1`
+				`Message got edited : ${msgNew.author.username}, adding -1`
 			);
 		}
 	}
@@ -544,8 +544,8 @@ client.on("interactionCreate", (interaction) => {
 			return new EmbedBuilder()
 				.setTitle(lang["l_3"].format(page))
 				.setAuthor({
-					name: interaction.user.displayName,
-					iconURL: interaction.user.avatarURL(),
+					name: interaction.member.displayName,
+					iconURL: interaction.member.displayAvatarURL(),
 				})
 				.setFooter({
 					text: lang["l_8"].format(
@@ -587,7 +587,7 @@ client.on("interactionCreate", (interaction) => {
 			if (i.user.id === interaction.user.id) return true;
 
 			console.log(
-				`${i.user.displayName} tried using buttons on a command used by ${interaction.user.displayName}`
+				`${i.member.displayName} tried using buttons on a command used by ${interaction.member.displayName}`
 			);
 			i.reply({
 				content: lang["l_10"],
@@ -746,11 +746,11 @@ client.on("interactionCreate", (interaction) => {
 			) // prestige
 			.setAuthor({
 				name: nonselfUser
-					? nonselfUser.user.displayName
-					: interaction.user.displayName,
+					? nonselfUser.member.displayName
+					: interaction.member.displayName,
 				iconURL: nonselfUser
-					? nonselfUser.user.avatarURL()
-					: interaction.user.avatarURL(),
+					? nonselfUser.member.displayAvatarURL()
+					: interaction.member.displayAvatarURL(),
 			})
 			.setFooter({
 				text: `You can use this command again in ${Math.floor(
