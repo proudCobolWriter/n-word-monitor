@@ -494,6 +494,7 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 });
 
 client.on("interactionCreate", async (interaction) => {
+	if (!interaction.isRepliable()) return;
 	await interaction.deferReply();
 	if (
 		interaction.isChatInputCommand() &&
@@ -609,7 +610,7 @@ client.on("interactionCreate", async (interaction) => {
 		});
 
 		interaction
-			.reply({
+			.followUp({
 				embeds: [createEmbed(1, getFields(1))],
 				components: [createActionRow("button1")],
 			})
@@ -637,7 +638,7 @@ client.on("interactionCreate", async (interaction) => {
 						)
 							buttonToGreyOut = "button2";
 
-						await i.update({
+						await i.editReply({
 							embeds: [
 								createEmbed(
 									updatedPageValue,
@@ -775,7 +776,7 @@ client.on("interactionCreate", async (interaction) => {
 				)
 			);
 
-		interaction.reply({ embeds: [embed2] }).catch((err) => {
+		interaction.followUp({ embeds: [embed2] }).catch((err) => {
 			console.log("Couldn't send embed on command 2!");
 			console.error(err);
 		});
@@ -808,7 +809,7 @@ client.on("interactionCreate", async (interaction) => {
 			]);
 
 		interaction
-			.reply({ embeds: [embed3], ephemeral: true })
+			.followUp({ embeds: [embed3], ephemeral: true })
 			.catch((err) => {
 				console.log("Couldn't send embed on command 3!");
 				console.error(err);
