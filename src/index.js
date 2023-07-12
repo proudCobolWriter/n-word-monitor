@@ -495,11 +495,11 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 
 client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isRepliable()) return;
-	await interaction.deferReply();
 	if (
 		interaction.isChatInputCommand() &&
 		interaction.commandName == lang.commands[0].name
 	) {
+		await interaction.deferReply();
 		if (
 			cooldownCommand1 >= Date.now() - commandCooldown &&
 			interaction.channelId != process.env.BOT_COMMS_CHANNEL_ID
@@ -638,7 +638,7 @@ client.on("interactionCreate", async (interaction) => {
 						)
 							buttonToGreyOut = "button2";
 
-						await i.editReply({
+						await i.update({
 							embeds: [
 								createEmbed(
 									updatedPageValue,
@@ -656,6 +656,7 @@ client.on("interactionCreate", async (interaction) => {
 		interaction.isChatInputCommand() &&
 		interaction.commandName == lang.commands[1].name
 	) {
+		await interaction.deferReply();
 		if (
 			cooldownCommand2 >= Date.now() - commandCooldown &&
 			interaction.channelId != process.env.BOT_COMMS_CHANNEL_ID
@@ -784,6 +785,7 @@ client.on("interactionCreate", async (interaction) => {
 		interaction.isChatInputCommand() &&
 		interaction.commandName == lang.commands[2].name
 	) {
+		await interaction.deferReply({ ephemeral: true });
 		let embed3 = new EmbedBuilder()
 			.setTitle("Bot information ⬇️")
 			.setColor(0x1b1e1e)
@@ -808,12 +810,10 @@ client.on("interactionCreate", async (interaction) => {
 				},
 			]);
 
-		interaction
-			.followUp({ embeds: [embed3], ephemeral: true })
-			.catch((err) => {
-				console.log("Couldn't send embed on command 3!");
-				console.error(err);
-			});
+		interaction.followUp({ embeds: [embed3] }).catch((err) => {
+			console.log("Couldn't send embed on command 3!");
+			console.error(err);
+		});
 	}
 });
 
