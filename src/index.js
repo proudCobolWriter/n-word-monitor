@@ -615,7 +615,7 @@ client.on("interactionCreate", (interaction) => {
 			.catch((err) => {
 					console.log("Couldn't send embed on command 1!");
 					console.error(err);
-				};
+				}
 			)
 			.finally(() => {
 				try {
@@ -780,7 +780,7 @@ client.on("interactionCreate", (interaction) => {
 			.catch((err) => {
 					console.log("Couldn't send embed on command 2!")
 					console.error(err);
-				};
+				}
 			);
 	} else if (
 		interaction.isChatInputCommand() &&
@@ -815,7 +815,7 @@ client.on("interactionCreate", (interaction) => {
 			.catch((err) => {
 					console.log("Couldn't send embed on command 3!")
 					console.error(err)
-				};
+				}
 			);
 	}
 });
