@@ -612,9 +612,10 @@ client.on("interactionCreate", (interaction) => {
 				embeds: [createEmbed(1, getFields(1))],
 				components: [createActionRow("button1")],
 			})
-			.catch((err) =>
-				console.log("Couldn't send embed on command 1 :");
-				console.error(err);
+			.catch((err) => {
+					console.log("Couldn't send embed on command 1!");
+					console.error(err);
+				};
 			)
 			.finally(() => {
 				try {
@@ -776,9 +777,10 @@ client.on("interactionCreate", (interaction) => {
 
 		interaction
 			.reply({ embeds: [embed2] })
-			.catch((err) =>
-				console.log("Couldn't send embed on command 2 :")
-				console.error(err);
+			.catch((err) => {
+					console.log("Couldn't send embed on command 2!")
+					console.error(err);
+				};
 			);
 	} else if (
 		interaction.isChatInputCommand() &&
@@ -810,9 +812,10 @@ client.on("interactionCreate", (interaction) => {
 
 		interaction
 			.reply({ embeds: [embed3], ephemeral: true })
-			.catch((err) =>
-				console.log("Couldn't send embed on command 3 :")
-				console.error(err)
+			.catch((err) => {
+					console.log("Couldn't send embed on command 3!")
+					console.error(err)
+				};
 			);
 	}
 });
