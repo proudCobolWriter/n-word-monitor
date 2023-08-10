@@ -609,15 +609,11 @@ client.on("interactionCreate", async (interaction) => {
 			filter,
 			time: 300e3,
 		});
-		console.log("leaderboard test 1");
 
 		interaction
 			.followUp({
 				embeds: [createEmbed(1, getFields(1))],
 				components: [createActionRow("button1")],
-			})
-			.then(() => {
-				console.log("leaderboard test 2");	
 			})
 			.catch((err) => {
 				console.log("Couldn't send embed on command 1!");
