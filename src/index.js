@@ -494,12 +494,16 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 });
 
 client.on("interactionCreate", async (interaction) => {
+	console.log("test, a");
 	if (!interaction.isRepliable()) return;
+	console.log("test, b");
 	if (
 		interaction.isChatInputCommand() &&
 		interaction.commandName == lang.commands[0].name
 	) {
+		console.log("test, c");
 		await interaction.deferReply();
+		console.log("test, d");
 		if (
 			cooldownCommand1 >= Date.now() - commandCooldown &&
 			interaction.channelId != process.env.BOT_COMMS_CHANNEL_ID
