@@ -818,9 +818,9 @@ client.on("interactionCreate", async (interaction) => {
 	}
 });
 
-client.on("debug", (...) => console.log);
+client.on("debug", console.log);
 
-client.on("error", (...) => console.error);
+client.on("error", console.error);
 
 // Exports and initialization
 
