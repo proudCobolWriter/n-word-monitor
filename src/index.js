@@ -494,16 +494,13 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-	console.log("test, a");
 	if (!interaction.isRepliable()) return;
-	console.log("test, b");
 	if (
 		interaction.isChatInputCommand() &&
 		interaction.commandName == lang.commands[0].name
 	) {
-		console.log("test, c");
 		await interaction.deferReply();
-		console.log("test, d");
+
 		if (
 			cooldownCommand1 >= Date.now() - commandCooldown &&
 			interaction.channelId != process.env.BOT_COMMS_CHANNEL_ID
@@ -612,11 +609,15 @@ client.on("interactionCreate", async (interaction) => {
 			filter,
 			time: 300e3,
 		});
+		console.log("leaderboard test 1");
 
 		interaction
 			.followUp({
 				embeds: [createEmbed(1, getFields(1))],
 				components: [createActionRow("button1")],
+			})
+			.then(() => {
+				console.log("leaderboard test 2");	
 			})
 			.catch((err) => {
 				console.log("Couldn't send embed on command 1!");
