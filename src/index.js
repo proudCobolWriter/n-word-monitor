@@ -818,6 +818,14 @@ client.on("interactionCreate", async (interaction) => {
 	}
 });
 
+client.on("debug", (...) => {
+	console.log(...);
+});
+
+client.on("error", (...) => {
+	console.error(...);
+});
+
 // Exports and initialization
 
 exports.getData = () => {
