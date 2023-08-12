@@ -1,6 +1,6 @@
 # Sync the files with the repo
 git reset --hard
-git pull
+git pull origin master
 
 # Install node_modules in case it is missing
 npm install
