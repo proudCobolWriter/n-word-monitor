@@ -1,5 +1,6 @@
 # Sync the files with the repo
 git reset --hard
+git clean -d -f
 git pull origin main
 
 # Install node_modules in case it is missing
