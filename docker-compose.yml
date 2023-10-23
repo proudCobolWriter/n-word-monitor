@@ -1,0 +1,31 @@
+version: "3"
+services:
+  bot:
+    container_name: bot
+    build: .
+    environment:
+      - TOKEN
+      - CLIENT_ID
+      - GUILD_ID
+      - BOT_COMMS_CHANNEL_ID
+      - EXPLICIT_WORDS
+      - PIXABAY_API_KEY
+      - HOST_URL
+      - HOST_PORT
+    ports:
+      - "${HOST_PORT}:${HOST_PORT}"
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /usr/src/n-word-monitor/src
+          ignore:
+            - node_modules/
+        - action: rebuild
+          path: package.json
+    volumes:
+      - db-data:/usr/local/apps/n-word-monitor/
+    restart: unless-stopped
+
+volumes:
+  db-data:

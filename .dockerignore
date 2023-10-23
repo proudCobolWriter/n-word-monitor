@@ -1,0 +1,26 @@
+# Folders
+
+.vscode/
+.git/
+logs/
+node_modules/
+
+# Files
+
+npm-debug.log
+startup.sh
+latesthash.cache
+db.json
+
+Dockerfile
+Makefile
+docker-compose.yml
+.prettierignore
+.prettierrc
+.dockerignore
+.eslintrc.json
+.gitattributes
+.gitignore
+.env
+
+**/*.md

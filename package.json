@@ -7,13 +7,15 @@
 		"dotenv": "^16.0.3",
 		"express": "^4.18.2",
 		"geoip-lite": "^1.4.7",
-		"winston": "^3.8.2"
+		"winston": "^3.8.2",
+		"winston-daily-rotate-file": "^4.7.1"
 	},
 	"name": "n-word-monitor",
 	"version": "6.9.0",
 	"main": "./src/index.js",
 	"scripts": {
 		"dev": "nodemon .",
+		"lint": "npx eslint . --ext .js,.mjs,.cjs",
 		"test": "node .",
 		"pretty": "npx prettier --write .",
 		"validate": "node ./src/validate_db.js",

@@ -2,5 +2,13 @@
 	"semi": true,
 	"useTabs": true,
 	"tabWidth": 4,
-	"singleQuote": false
+	"singleQuote": false,
+	"overrides": [
+		{
+		"files": ["*.yml", "*.ymal"],
+			"options": {
+				"tabWidth": 2
+			}
+		}
+	]
 }

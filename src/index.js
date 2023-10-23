@@ -1,4 +1,5 @@
 require("dotenv").config();
+const IS_DOCKER_CONTAINER = process.env.DOCKER_RUNNING === "true";
 
 // Dependencies
 
@@ -30,12 +31,43 @@ const client = new Client({
 // Logging setup
 
 if (process.env.NODE_ENV === "production") {
+	require("winston-daily-rotate-file");
+
+	const ansiRegex = ({ onlyFirst = false } = {}) => {
+		const pattern = [
+			"[\\u001B\\u009B][[\\]()#;?]*(?:(?:(?:(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]+)*|[a-zA-Z\\d]+(?:;[-a-zA-Z\\d\\/#&.:=?%@~_]*)*)?\\u0007)",
+			"(?:(?:\\d{1,4}(?:;\\d{0,4})*)?[\\dA-PR-TZcf-nq-uy=><~]))",
+		].join("|");
+
+		return new RegExp(pattern, onlyFirst ? undefined : "g");
+	};
+
 	const logger = winston.createLogger({
 		defaultMeta: { service: "user-service" },
 		exitOnError: false,
 		colorize: true,
 		transports: [
-			new winston.transports.File({ filename: "./logs/combined.log" }),
+			new winston.transports.DailyRotateFile({
+				filename: IS_DOCKER_CONTAINER
+					? "/usr/local/apps/n-word-monitor/logs/combined-%DATE%.log"
+					: "./logs/combined-%DATE%.log",
+				datePattern: "MM-DD-YYYY-HH",
+				maxSize: "1g",
+				format: winston.format.combine(
+					winston.format.timestamp({
+						format: "MMM-DD-YYYY HH:mm:ss",
+					}),
+					winston.format.printf(
+						({ level, message, timestamp, stack }) =>
+							`${level.replace(
+								ansiRegex(),
+								""
+							)}: BOT-LOGS: ${timestamp}: ${
+								stack ? stack : message
+							}`
+					)
+				),
+			}),
 			new winston.transports.Console(),
 		],
 		format: winston.format.combine(
@@ -43,12 +75,12 @@ if (process.env.NODE_ENV === "production") {
 				format: "MMM-DD-YYYY HH:mm:ss",
 			}),
 			winston.format.colorize(),
-			winston.format.printf(({ level, message, timestamp, stack }) => {
-				if (stack) {
-					return `${level}: BOT-LOGS: ${timestamp}: ${stack}`;
-				}
-				return `${level}: BOT-LOGS: ${timestamp}: ${message}`;
-			})
+			winston.format.printf(
+				({ level, message, timestamp, stack }) =>
+					`${level}: BOT-LOGS: ${timestamp}: ${
+						stack ? stack : message
+					}`
+			)
 		),
 	});
 
@@ -110,8 +142,13 @@ String.prototype.format = function () {
 
 // Functions and event handlers
 
-function readJSON(p) {
+function readJSON(p, readInDockerStorage = false) {
 	let result = [];
+
+	if (readInDockerStorage) {
+		// use "db-data" volume instead if ran inside a Docker container
+		p = "/usr/local/apps/n-word-monitor/" + p;
+	}
 
 	try {
 		result = fs.readFileSync(p, "utf-8");
@@ -120,16 +157,23 @@ function readJSON(p) {
 		console.log("Caught an error while parsing at path : " + p);
 	}
 
-	return result;
+	return [p, result];
 }
 
-function writeToJSON(p) {
+function writeToJSON(p, writeInDockerStorage = false) {
+	if (writeInDockerStorage) {
+		// use "db-data" volume instead if ran inside a Docker container
+		p = "/usr/local/apps/n-word-monitor/" + p;
+	}
+
 	try {
 		fs.writeFileSync(p, JSON.stringify(data, null, 4));
 		console.log("The file was successfully written");
 	} catch {
 		console.log("Caught an error while writing at path : " + p);
 	}
+
+	return p;
 }
 
 let presenceIndex = 0;
@@ -234,11 +278,18 @@ function milestoneFunction() {
 }
 
 (() => {
-	data = readJSON("./db.json");
-	lang = readJSON("./lang.json");
+	let rawData = readJSON("db.json", true);
+	let rawLang = readJSON("./lang.json");
 
-	if (!data || data.length == 0) {
-		throw "Database is either skewed or empty";
+	data = rawData[1];
+	lang = rawLang[1];
+
+	if (!data) {
+		if (fs.existsSync(rawData[0])) {
+			throw "Error retrieving database, the file is most likely skewed";
+		} else {
+			writeToJSON("db.json", true);
+		}
 	}
 
 	if (!lang || Object.keys(lang).length == 0) {
@@ -258,7 +309,7 @@ function milestoneFunction() {
 	setInterval(() => {
 		try {
 			if (changed) {
-				writeToJSON("db.json");
+				writeToJSON("db.json", true);
 				changed = false;
 
 				updateNwordUsages();
@@ -561,7 +612,9 @@ client.on("interactionCreate", async (interaction) => {
 						dataOnThisUser && dataOnThisUser.user
 							? dataOnThisUser.user.score
 							: "0",
-						dataOnThisUser.user.score &&
+						dataOnThisUser &&
+							dataOnThisUser.user &&
+							dataOnThisUser.user.score &&
 							dataOnThisUser.user.score > 1
 							? "s"
 							: ""

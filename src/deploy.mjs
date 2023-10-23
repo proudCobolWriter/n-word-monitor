@@ -1,5 +1,9 @@
 //* Only updates the commands' stringified array hash changes (=option changes) as refreshing on startup is considered to be a bad practice *//
+//* Make sure to run this script like so in the root directory: node src/deploy.mjs *//
 // Dependencies
+
+import { config } from "dotenv";
+config();
 
 import { REST as DisAPI } from "@discordjs/rest";
 import { Routes } from "discord.js";
@@ -33,7 +37,10 @@ try {
 	];
 
 	let latestHash = "";
-	const p = CACHE_FILE_NAME + ".cache";
+	const p =
+		(process.env.DOCKER_RUNNING ? "/usr/local/apps/n-word-monitor/" : "") +
+		CACHE_FILE_NAME +
+		".cache";
 
 	if (fs.existsSync(p)) {
 		latestHash = fs.readFileSync(p, "utf-8");
@@ -65,6 +72,6 @@ try {
 	}
 } catch (error) {
 	console.error(
-		`An error occurred whilst refreshing up application (/) commands : ${error}`
+		`An error occurred whilst refreshing up application (/) commands : ${error}\nMake sure to run this script like so in the root directory: node src/deploy.mjs`
 	);
 }
