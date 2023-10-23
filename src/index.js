@@ -278,7 +278,7 @@ function milestoneFunction() {
 }
 
 (() => {
-	let rawData = readJSON("db.json", true);
+	let rawData = readJSON("db.json", IS_DOCKER_CONTAINER);
 	let rawLang = readJSON("./lang.json");
 
 	data = rawData[1];
@@ -309,7 +309,7 @@ function milestoneFunction() {
 	setInterval(() => {
 		try {
 			if (changed) {
-				writeToJSON("db.json", true);
+				writeToJSON("db.json", IS_DOCKER_CONTAINER);
 				changed = false;
 
 				updateNwordUsages();
