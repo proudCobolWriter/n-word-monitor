@@ -9,9 +9,6 @@ const {
 	Client,
 	EmbedBuilder,
 	ActivityType,
-	ActionRowBuilder,
-	ButtonBuilder,
-	ButtonStyle,
 	IntentsBitField,
 } = require("discord.js");
 
@@ -27,6 +24,8 @@ botIntents.add(
 const client = new Client({
 	intents: botIntents,
 });
+
+const commands = require("./commands/");
 
 // Logging setup
 
@@ -96,7 +95,6 @@ if (process.env.NODE_ENV === "production") {
 // Constants
 
 const intervalDelay = 15e3;
-const commandCooldown = 10e3;
 const coooldownMessages = 30e3;
 
 // Data storage
@@ -545,335 +543,13 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 });
 
 client.on("interactionCreate", async (interaction) => {
-	if (!interaction.isRepliable()) return;
-	if (
-		interaction.isChatInputCommand() &&
-		interaction.commandName == lang.commands[0].name
-	) {
-		await interaction.deferReply();
+	if (!interaction.isRepliable() || !interaction.isChatInputCommand()) return;
 
-		if (
-			cooldownCommand1 >= Date.now() - commandCooldown &&
-			interaction.channelId != process.env.BOT_COMMS_CHANNEL_ID
-		) {
-			console.log("Attention cooldown command1");
-			return;
-		}
-		cooldownCommand1 = Date.now();
-
-		let newData = [...(data || [])].sort((a, b) => {
-			if (!a.user) return 1;
-			if (!b.user) return -1;
-			return (
-				(b.user.score != undefined ? b.user.score : 0) -
-				(a.user.score != undefined ? a.user.score : 0)
-			);
-		}); // returns the sorted array
-
-		let dataOnThisUser = newData.find((element) => {
-			if (!element.user) return false;
-			return element.user.userID == interaction.user.id;
-		});
-
-		let getFields = (page) => {
-			let fields = [];
-
-			for (let i = 5 * (page - 1); i < 5 * page; i++) {
-				let datai = newData[i];
-
-				if (datai && datai.user) {
-					let emoji =
-						i == 0 ? "🥇" : i == 1 ? "🥈" : i == 2 ? "🥉" : "";
-					fields.push({
-						name: `${emoji} ${i + 1}# place`,
-						value: lang["l_4"].format(
-							datai.user.userID,
-							datai.user.score
-						),
-					});
-				} else {
-					break;
-				}
-			}
-
-			return fields;
-		};
-
-		let createEmbed = (page, f) => {
-			return new EmbedBuilder()
-				.setTitle(lang["l_3"].format(page))
-				.setAuthor({
-					name: interaction.member.displayName,
-					iconURL: interaction.member.displayAvatarURL(),
-				})
-				.setFooter({
-					text: lang["l_8"].format(
-						Math.floor(commandCooldown / 1000),
-						dataOnThisUser && dataOnThisUser.user
-							? dataOnThisUser.user.score
-							: "0",
-						dataOnThisUser &&
-							dataOnThisUser.user &&
-							dataOnThisUser.user.score &&
-							dataOnThisUser.user.score > 1
-							? "s"
-							: ""
-					),
-					iconURL: client.user.defaultAvatarURL,
-				})
-				.setTimestamp()
-				.setColor("Blurple")
-				.addFields(f)
-				.setDescription("\n");
-		};
-
-		let createActionRow = (buttonToDisable) => {
-			return new ActionRowBuilder().setComponents(
-				new ButtonBuilder()
-					.setCustomId("button1")
-					.setLabel("Page left")
-					.setEmoji("⬅️")
-					.setStyle(ButtonStyle.Success)
-					.setDisabled(buttonToDisable == "button1"),
-				new ButtonBuilder()
-					.setCustomId("button2")
-					.setLabel("Page right")
-					.setEmoji("➡️")
-					.setStyle(ButtonStyle.Success)
-					.setDisabled(buttonToDisable == "button2")
-			);
-		};
-
-		const filter = (i) => {
-			if (i.user.id === interaction.user.id) return true;
-
-			console.log(
-				`${i.member.displayName} tried using buttons on a command used by ${interaction.member.displayName}`
-			);
-			i.reply({
-				content: lang["l_10"],
-				ephemeral: true,
-			});
-
-			return false;
-		};
-
-		const collector = interaction.channel.createMessageComponentCollector({
-			filter,
-			time: 300e3,
-		});
-
-		interaction
-			.followUp({
-				embeds: [createEmbed(1, getFields(1))],
-				components: [createActionRow("button1")],
-			})
-			.catch((err) => {
-				console.log("Couldn't send embed on command 1!");
-				console.error(err);
-			})
-			.finally(() => {
-				try {
-					collector.on("collect", async (i) => {
-						let e = i.message.embeds[0];
-						let page = parseInt(
-							e.data.title
-								? e.data.title.replace(/[^0-9]/g, "")
-								: 1
-						);
-						let buttonClicked = i.customId;
-						let updatedPageValue =
-							page + (buttonClicked == "button1" ? -1 : 1);
-						let buttonToGreyOut =
-							updatedPageValue > 1 ? "none" : "button1";
-						if (
-							getFields(updatedPageValue + 1).length == 0 &&
-							buttonToGreyOut != "button1"
-						)
-							buttonToGreyOut = "button2";
-
-						await i.update({
-							embeds: [
-								createEmbed(
-									updatedPageValue,
-									getFields(updatedPageValue)
-								),
-							],
-							components: [createActionRow(buttonToGreyOut)],
-						});
-					});
-				} catch (err) {
-					console.log("Error occured at button collector : ", err);
-				}
-			});
-	} else if (
-		interaction.isChatInputCommand() &&
-		interaction.commandName == lang.commands[1].name
-	) {
-		await interaction.deferReply();
-		if (
-			cooldownCommand2 >= Date.now() - commandCooldown &&
-			interaction.channelId != process.env.BOT_COMMS_CHANNEL_ID
-		) {
-			console.log("Attention cooldown command2");
-			return;
-		}
-		cooldownCommand2 = Date.now();
-
-		let nonselfUser = interaction.options.data[0];
-
-		let newData = [...(data || [])].sort((a, b) => {
-			if (!a.user) return 1;
-			if (!b.user) return -1;
-			return (
-				(b.user.score != undefined ? b.user.score : 0) -
-				(a.user.score != undefined ? a.user.score : 0)
-			);
-		}); // returns the sorted array
-
-		let descriptionString = "";
-		let place = newData.findIndex((element) => {
-			if (!element.user) return false;
-			return (
-				element.user.userID ==
-				(nonselfUser ? nonselfUser.user.id : interaction.user.id)
-			);
-		});
-
-		let dataOnThisUser = data.find((element) => {
-			if (!element.user) return false;
-			return (
-				element.user.userID ==
-				(nonselfUser ? nonselfUser.user.id : interaction.user.id)
-			);
-		});
-
-		if (!dataOnThisUser || !dataOnThisUser.user) {
-			descriptionString = lang["l_5"];
-		} else {
-			if (place != 0) {
-				descriptionString = lang["l_6"].format(
-					place + 1,
-					dataOnThisUser.user.score != undefined
-						? dataOnThisUser.user.score
-						: "0",
-					dataOnThisUser.user.score && dataOnThisUser.user.score > 1
-						? "s"
-						: "",
-					"<@!" +
-						((newData[place - 1] || []).user || []).userID +
-						">" || "nobody lol"
-				);
-			} else {
-				descriptionString = lang["l_7"].format(
-					dataOnThisUser.user.score != undefined
-						? dataOnThisUser.user.score
-						: "0"
-				);
-			}
-		}
-
-		let scoreAfterMidnight = 0;
-		if (
-			dataOnThisUser != undefined &&
-			dataOnThisUser.user != undefined &&
-			dataOnThisUser.user.scoreAfterMidnight != undefined &&
-			dataOnThisUser.user.day != undefined &&
-			dataOnThisUser.user.month != undefined
-		) {
-			if (
-				dataOnThisUser.user.day != new Date().getUTCDate() ||
-				dataOnThisUser.user.month != new Date().getUTCMonth()
-			) {
-				console.log("Resetted count : a new day has passed");
-				dataOnThisUser.user.scoreAfterMidnight = 0;
-				dataOnThisUser.user.day = new Date().getUTCDate();
-				dataOnThisUser.user.month = new Date().getUTCMonth();
-				scoreAfterMidnight = 0;
-			} else {
-				scoreAfterMidnight = dataOnThisUser.user.scoreAfterMidnight;
-			}
-		} else {
-			if (dataOnThisUser && dataOnThisUser.user) {
-				console.log(
-					`Data is potentially missing on "scoreAfterMidnight", "day" and "month" keys`
-				);
-			}
-		}
-
-		let embed2 = new EmbedBuilder()
-			.setTitle(
-				lang["l_11"].format(
-					!dataOnThisUser ? "0" : dataOnThisUser.user.score * 3.5
-				)
-			) // prestige
-			.setAuthor({
-				name: nonselfUser
-					? nonselfUser.member.displayName
-					: interaction.member.displayName,
-				iconURL: nonselfUser
-					? nonselfUser.member.displayAvatarURL()
-					: interaction.member.displayAvatarURL(),
-			})
-			.setFooter({
-				text: `You can use this command again in ${Math.floor(
-					commandCooldown / 1000
-				)}s`,
-				iconURL: client.user.defaultAvatarURL,
-			})
-			.setTimestamp()
-			.setColor("Greyple")
-			.setDescription(
-				lang["l_9"].format(
-					descriptionString,
-					scoreAfterMidnight,
-					scoreAfterMidnight > 1 ? "s" : ""
-				)
-			);
-
-		interaction.followUp({ embeds: [embed2] }).catch((err) => {
-			console.log("Couldn't send embed on command 2!");
-			console.error(err);
-		});
-	} else if (
-		interaction.isChatInputCommand() &&
-		interaction.commandName == lang.commands[2].name
-	) {
-		await interaction.deferReply({ ephemeral: true });
-		let embed3 = new EmbedBuilder()
-			.setTitle("Bot information ⬇️")
-			.setColor(0x1b1e1e)
-			.addFields([
-				{
-					...lang["l_0"][0],
-					inline: true,
-				},
-				...Array(1).fill({
-					// choose how much empty fields we want here
-					name: "\u200b",
-					value: "\u200b",
-					inline: true,
-				}),
-				{
-					name: lang["l_0"][1].name,
-					value: lang["l_0"][1].value.format(
-						process.env.HOST_URL,
-						process.env.HOST_PORT
-					),
-					inline: true,
-				},
-			]);
-
-		interaction.followUp({ embeds: [embed3] }).catch((err) => {
-			console.log("Couldn't send embed on command 3!");
-			console.error(err);
-		});
-	}
+	if (commands[interaction.commandName])
+		commands[interaction.commandName](client, interaction, lang, data);
 });
 
-// client.on("debug", console.log);
-
-// client.on("error", console.error);
+client.on("error", console.error);
 
 // Exports and initialization
 
