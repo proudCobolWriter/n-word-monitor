@@ -7,7 +7,7 @@ module.exports = async (client, interaction) => {
 		.permissionsIn(interaction.channel)
 		.has("ADMINISTRATOR");
 
-	if (isMemberAdmin) {
+	if (!isMemberAdmin) {
 		interaction
 			.followUp(
 				"You need the __**ADMINISTRATOR**__ permission to use this command!"
