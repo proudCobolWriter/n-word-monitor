@@ -4,19 +4,11 @@ const { EmbedBuilder } = require("discord.js");
 
 // Export
 
-module.exports = async (client, interaction, lang, data) => {
+module.exports = async (_, interaction, lang, data) => {
 	await interaction.deferReply();
 
-	if (
-		/*cooldownCommand2 >= Date.now() - commandCooldown &&*/
-		interaction.channelId != process.env.BOT_COMMS_CHANNEL_ID
-	) {
-		console.log("Attention cooldown command2");
-		return;
-	}
-	//cooldownCommand2 = Date.now();
-
 	let nonselfUser = interaction.options.data[0];
+	let isSelf = !nonselfUser || nonselfUser.user.id === interaction.user.id;
 
 	let newData = [...(data || [])].sort((a, b) => {
 		if (!a.user) return 1;
@@ -44,27 +36,61 @@ module.exports = async (client, interaction, lang, data) => {
 		);
 	});
 
+	let dataOnCommandPosterUser = data.find((element) => {
+		if (!element.user) return false;
+		return element.user.userID == interaction.user.id;
+	});
+
 	if (!dataOnThisUser || !dataOnThisUser.user) {
-		descriptionString = lang["l_5"];
+		if (isSelf) {
+			descriptionString = lang["l_5"];
+		} else {
+			descriptionString = lang["l_5b"].format(
+				nonselfUser.user.displayName,
+			);
+		}
 	} else {
 		if (place != 0) {
-			descriptionString = lang["l_6"].format(
-				place + 1,
-				dataOnThisUser.user.score != undefined
-					? dataOnThisUser.user.score
-					: "0",
-				dataOnThisUser.user.score && dataOnThisUser.user.score > 1
-					? "s"
-					: "",
-				"<@!" + ((newData[place - 1] || []).user || []).userID + ">" ||
-					"nobody lol"
-			);
+			if (isSelf) {
+				descriptionString = lang["l_6"].format(
+					place + 1,
+					dataOnThisUser.user.score != undefined
+						? dataOnThisUser.user.score
+						: "0",
+					"<@!" +
+						((newData[place - 1] || []).user || []).userID +
+						">" || "nobody lol",
+				);
+			} else {
+				descriptionString = lang["l_6b"].format(
+					nonselfUser.user.displayName,
+					place + 1,
+					nonselfUser.user.displayName,
+					dataOnThisUser.user.score != undefined
+						? dataOnThisUser.user.score
+						: "0",
+					nonselfUser.user.displayName,
+					"<@!" +
+						((newData[place - 1] || []).user || []).userID +
+						">" || "nobody",
+				);
+			}
 		} else {
-			descriptionString = lang["l_7"].format(
-				dataOnThisUser.user.score != undefined
-					? dataOnThisUser.user.score
-					: "0"
-			);
+			if (isSelf) {
+				descriptionString = lang["l_7"].format(
+					dataOnThisUser.user.score != undefined
+						? dataOnThisUser.user.score
+						: "0",
+				);
+			} else {
+				descriptionString = lang["l_7b"].format(
+					nonselfUser.user.displayName,
+					dataOnThisUser.user.score != undefined
+						? dataOnThisUser.user.score
+						: "0",
+					nonselfUser.user.displayName,
+				);
+			}
 		}
 	}
 
@@ -91,17 +117,36 @@ module.exports = async (client, interaction, lang, data) => {
 	} else {
 		if (dataOnThisUser && dataOnThisUser.user) {
 			console.log(
-				`Data is potentially missing on "scoreAfterMidnight", "day" and "month" keys`
+				`Data is potentially missing on "scoreAfterMidnight", "day" and "month" keys`,
 			);
 		}
 	}
 
+	let title = lang[isSelf ? "l_11" : "l_11b"];
+	if (isSelf) {
+		title = title.format(
+			!dataOnThisUser ? "0" : dataOnThisUser.user.score * 3.5,
+		);
+	} else {
+		title = title.format(
+			nonselfUser.user.displayName,
+			!dataOnThisUser ? "0" : dataOnThisUser.user.score * 3.5,
+		);
+	}
+
+	let description = lang[isSelf ? "l_9" : "l_9b"];
+	if (isSelf) {
+		description = description.format(descriptionString, scoreAfterMidnight);
+	} else {
+		description = description.format(
+			descriptionString,
+			nonselfUser.user.displayName,
+			scoreAfterMidnight,
+		);
+	}
+
 	let embed2 = new EmbedBuilder()
-		.setTitle(
-			lang["l_11"].format(
-				!dataOnThisUser ? "0" : dataOnThisUser.user.score * 3.5
-			)
-		) // prestige
+		.setTitle(title)
 		.setAuthor({
 			name: nonselfUser
 				? nonselfUser.member.displayName
@@ -111,23 +156,21 @@ module.exports = async (client, interaction, lang, data) => {
 				: interaction.member.displayAvatarURL(),
 		})
 		.setFooter({
-			text: `You can use this command again in ${Math.floor(
-				/*commandCooldown*/ 1000 / 1000
-			)}s`,
-			iconURL: client.user.defaultAvatarURL,
+			text: isSelf
+				? interaction.member.displayName
+				: lang["l_8"].format(
+						dataOnCommandPosterUser && dataOnCommandPosterUser.user
+							? dataOnCommandPosterUser.user.score
+							: "0",
+				  ),
+			iconURL: interaction.member.displayAvatarURL(),
 		})
 		.setTimestamp()
 		.setColor("Greyple")
-		.setDescription(
-			lang["l_9"].format(
-				descriptionString,
-				scoreAfterMidnight,
-				scoreAfterMidnight > 1 ? "s" : ""
-			)
-		);
+		.setDescription(description);
 
 	interaction.followUp({ embeds: [embed2] }).catch((err) => {
-		console.log("Couldn't send embed on command 2!");
+		console.log("Couldn't send embed on command rranking!");
 		console.error(err);
 	});
 };

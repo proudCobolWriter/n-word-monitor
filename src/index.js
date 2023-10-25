@@ -109,9 +109,6 @@ const msgCooldownData = new Map();
 let changed = false;
 let nwordusages = 0;
 
-let cooldownCommand1 = 0;
-let cooldownCommand2 = 0;
-
 // Create user object
 
 function User(userID, score, scoreAfterMidnight, userPfpURL, userUsername) {
@@ -544,6 +541,7 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 
 client.on("interactionCreate", async (interaction) => {
 	if (!interaction.isRepliable() || !interaction.isChatInputCommand()) return;
+	if (interaction.channel.guildId !== process.env.GUILD_ID) return;
 
 	if (commands[interaction.commandName])
 		commands[interaction.commandName](client, interaction, lang, data);

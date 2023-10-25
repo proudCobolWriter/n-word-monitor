@@ -7,7 +7,6 @@ services:
       - TOKEN
       - CLIENT_ID
       - GUILD_ID
-      - BOT_COMMS_CHANNEL_ID
       - EXPLICIT_WORDS
       - PIXABAY_API_KEY
       - HOST_URL

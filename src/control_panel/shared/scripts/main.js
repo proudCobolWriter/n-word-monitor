@@ -46,14 +46,14 @@ if (parsedUserData && parsedUserData.length >= 3) {
 			hashtagElement.innerText = "#";
 			hashtagElement.setAttribute(
 				"class",
-				"leaderboard-place anton-font"
+				"leaderboard-place anton-font",
 			);
 			numberElement.appendChild(hashtagElement);
 
 			numberElement.append(k);
 			numberElement.setAttribute(
 				"class",
-				"leaderboard-place anton-font italic"
+				"leaderboard-place anton-font italic",
 			);
 
 			const divElement = document.createElement("div");

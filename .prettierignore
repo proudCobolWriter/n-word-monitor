@@ -10,5 +10,3 @@ LICENSE
 .env
 .prettierignore
 .prettierrc
-
-*.json

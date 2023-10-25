@@ -20,21 +20,7 @@ const CACHE_FILE_NAME = "latesthash";
 try {
 	const startingTimestamp = Date.now();
 	const lang = JSON.parse(fs.readFileSync("./lang.json"));
-	const commands = [
-		lang.commands[0],
-		{
-			...lang.commands[1],
-			options: [
-				{
-					name: "member",
-					description: "the person you want to look up",
-					type: 6,
-					required: false,
-				},
-			],
-		},
-		lang.commands[2],
-	];
+	const commands = lang.commands;
 
 	let latestHash = "";
 	const p =
@@ -57,21 +43,21 @@ try {
 		await rest.put(
 			Routes.applicationGuildCommands(
 				process.env.CLIENT_ID,
-				process.env.GUILD_ID
+				process.env.GUILD_ID,
 			),
 			{
 				body: commands,
-			}
+			},
 		);
 
 		console.log(
 			`Successfuly refreshed application (/) commands, process took ${
 				Date.now() - startingTimestamp
-			}ms`
+			}ms`,
 		);
 	}
 } catch (error) {
 	console.error(
-		`An error occurred whilst refreshing up application (/) commands : ${error}\nMake sure to run this script like so in the root directory: node src/deploy.mjs`
+		`An error occurred whilst refreshing up application (/) commands : ${error}\nMake sure to run this script like so in the root directory: node src/deploy.mjs`,
 	);
 }

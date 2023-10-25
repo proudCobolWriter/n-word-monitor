@@ -78,13 +78,13 @@ app.get("/", (request, response) => {
 
 		baseHTML = fs.readFileSync(
 			path.join(__dirname, "shared", "page.html"),
-			"utf8"
+			"utf8",
 		);
 		baseHTML = baseHTML.format(
 			JSON.stringify(wallpapers.random()),
 			JSON.stringify(newData),
 			guildIcon,
-			...botLang["panel_l"]
+			...botLang["panel_l"],
 		);
 
 		if (baseHTML && wallpapers.length > 0) {
@@ -96,7 +96,7 @@ app.get("/", (request, response) => {
 			console.log(
 				`✨ Successfuly sent back HTML (user region: ${
 					!userRegion ? "unknown" : userRegion.country
-				})`
+				})`,
 			);
 
 			return;
@@ -104,12 +104,12 @@ app.get("/", (request, response) => {
 
 		response
 			.send(
-				"No wallpapers found, refresh the page or contact the administrator"
+				"No wallpapers found, refresh the page or contact the administrator",
 			)
 			.status(500);
 
 		console.log(
-			"Someone attempted to access the control panel without the wallpapers being loaded!"
+			"Someone attempted to access the control panel without the wallpapers being loaded!",
 		);
 	} catch (error) {
 		response.send("Internal Server Error").status(500);
@@ -121,11 +121,11 @@ app.get("/", (request, response) => {
 app.use("/", express.static(path.join(__dirname, "shared")));
 app.listen(parseInt(process.env.HOST_PORT), () => {
 	console.log(
-		`⚡ Server is running on ${process.env.HOST_URL}:${process.env.HOST_PORT}`
+		`⚡ Server is running on ${process.env.HOST_URL}:${process.env.HOST_PORT}`,
 	);
 }).on("error", (error) => {
 	console.error(
-		`Webserver has encountered an error while loading : ${error}`
+		`Webserver has encountered an error while loading : ${error}`,
 	);
 });
 
@@ -166,7 +166,7 @@ const retrievePopularWallpapers = function () {
 		.catch((error) => {
 			console.error(
 				`Error occurred whilst retrieving wallpapers, retrying in ${RETRY_INTERVAL} seconds:\n` +
-					error.message
+					error.message,
 			);
 
 			setTimeout(() => {

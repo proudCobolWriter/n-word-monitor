@@ -7,23 +7,10 @@ const {
 	ButtonStyle,
 } = require("discord.js");
 
-// Constants
-
-const commandCooldown = 10e3;
-
 // Export
 
-module.exports = async (client, interaction, lang, data) => {
+module.exports = async (_, interaction, lang, data) => {
 	await interaction.deferReply();
-
-	if (
-		/*cooldownCommand1 >= Date.now() - commandCooldown &&*/
-		interaction.channelId != process.env.BOT_COMMS_CHANNEL_ID
-	) {
-		console.log("Attention cooldown command1");
-		return;
-	}
-	//cooldownCommand1 = Date.now();
 
 	let newData = [...(data || [])].sort((a, b) => {
 		if (!a.user) return 1;
@@ -51,7 +38,7 @@ module.exports = async (client, interaction, lang, data) => {
 					name: `${emoji} ${i + 1}# place`,
 					value: lang["l_4"].format(
 						datai.user.userID,
-						datai.user.score
+						datai.user.score,
 					),
 				});
 			} else {
@@ -71,18 +58,11 @@ module.exports = async (client, interaction, lang, data) => {
 			})
 			.setFooter({
 				text: lang["l_8"].format(
-					Math.floor(commandCooldown / 1000),
 					dataOnThisUser && dataOnThisUser.user
 						? dataOnThisUser.user.score
 						: "0",
-					dataOnThisUser &&
-						dataOnThisUser.user &&
-						dataOnThisUser.user.score &&
-						dataOnThisUser.user.score > 1
-						? "s"
-						: ""
 				),
-				iconURL: client.user.defaultAvatarURL,
+				iconURL: interaction.member.displayAvatarURL(),
 			})
 			.setTimestamp()
 			.setColor("Blurple")
@@ -103,7 +83,7 @@ module.exports = async (client, interaction, lang, data) => {
 				.setLabel("Page right")
 				.setEmoji("➡️")
 				.setStyle(ButtonStyle.Success)
-				.setDisabled(buttonToDisable == "button2")
+				.setDisabled(buttonToDisable == "button2"),
 		);
 	};
 
@@ -111,7 +91,7 @@ module.exports = async (client, interaction, lang, data) => {
 		if (i.user.id === interaction.user.id) return true;
 
 		console.log(
-			`${i.member.displayName} tried using buttons on a command used by ${interaction.member.displayName}`
+			`${i.member.displayName} tried using buttons on a command used by ${interaction.member.displayName}`,
 		);
 		i.reply({
 			content: lang["l_10"],
@@ -132,7 +112,7 @@ module.exports = async (client, interaction, lang, data) => {
 			components: [createActionRow("button1")],
 		})
 		.catch((err) => {
-			console.log("Couldn't send embed on command 1!");
+			console.log("Couldn't send embed on command rbotleaderboard!");
 			console.error(err);
 		})
 		.finally(() => {
@@ -140,7 +120,7 @@ module.exports = async (client, interaction, lang, data) => {
 				collector.on("collect", async (i) => {
 					let e = i.message.embeds[0];
 					let page = parseInt(
-						e.data.title ? e.data.title.replace(/[^0-9]/g, "") : 1
+						e.data.title ? e.data.title.replace(/[^0-9]/g, "") : 1,
 					);
 					let buttonClicked = i.customId;
 					let updatedPageValue =
@@ -157,7 +137,7 @@ module.exports = async (client, interaction, lang, data) => {
 						embeds: [
 							createEmbed(
 								updatedPageValue,
-								getFields(updatedPageValue)
+								getFields(updatedPageValue),
 							),
 						],
 						components: [createActionRow(buttonToGreyOut)],

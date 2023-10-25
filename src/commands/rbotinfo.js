@@ -4,7 +4,7 @@ const { EmbedBuilder } = require("discord.js");
 
 // Export
 
-module.exports = async (client, interaction, lang) => {
+module.exports = async (_, interaction, lang) => {
 	await interaction.deferReply({ ephemeral: true });
 
 	let embed3 = new EmbedBuilder()
@@ -25,14 +25,14 @@ module.exports = async (client, interaction, lang) => {
 				name: lang["l_0"][1].name,
 				value: lang["l_0"][1].value.format(
 					process.env.HOST_URL,
-					process.env.HOST_PORT
+					process.env.HOST_PORT,
 				),
 				inline: true,
 			},
 		]);
 
 	interaction.followUp({ embeds: [embed3] }).catch((err) => {
-		console.log("Couldn't send embed on command 3!");
+		console.log("Couldn't send embed on command rbotinfo!");
 		console.error(err);
 	});
 };
