@@ -16,3 +16,4 @@ db-backup.json
 
 *.cache
 lang.json
+uptimeData.json

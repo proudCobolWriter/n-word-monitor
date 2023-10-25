@@ -99,6 +99,7 @@ const coooldownMessages = 30e3;
 
 // Data storage
 
+let uptimeData = {};
 let data = [];
 let lang = {};
 
@@ -155,17 +156,17 @@ function readJSON(p, readInDockerStorage = false) {
 	return [p, result];
 }
 
-function writeToJSON(p, writeInDockerStorage = false) {
+function writeToJSON(p, writeInDockerStorage = false, dataToWrite) {
 	if (writeInDockerStorage) {
 		// use "db-data" volume instead if ran inside a Docker container
 		p = "/usr/local/apps/n-word-monitor/" + p;
 	}
 
 	try {
-		fs.writeFileSync(p, JSON.stringify(data, null, 4));
-		console.log("The file was successfully written");
+		fs.writeFileSync(p, JSON.stringify(dataToWrite, null, 4));
+		console.log(`${p} was successfully written`);
 	} catch {
-		console.log("Caught an error while writing at path : " + p);
+		console.log(`Caught an error while writing at path : ${p}`);
 	}
 
 	return p;
@@ -273,9 +274,11 @@ function milestoneFunction() {
 }
 
 (() => {
+	let rawUptime = readJSON("uptimeData.json", IS_DOCKER_CONTAINER);
 	let rawData = readJSON("db.json", IS_DOCKER_CONTAINER);
 	let rawLang = readJSON("./lang.json");
 
+	uptimeData = rawUptime[1];
 	data = rawData[1];
 	lang = rawLang[1];
 
@@ -283,12 +286,21 @@ function milestoneFunction() {
 		if (fs.existsSync(rawData[0])) {
 			throw "Error retrieving database, the file is most likely skewed";
 		} else {
-			writeToJSON("db.json", true);
+			writeToJSON("db.json", true, data);
 		}
 	}
 
 	if (!lang || Object.keys(lang).length == 0) {
 		throw "Couldn't retrieve lang data";
+	}
+
+	if (!uptimeData) {
+		uptimeData = {
+			startOfRecording: Math.floor(new Date().getTime() / 1000),
+			lastRecording: 0,
+			recordings: 0,
+		};
+		writeToJSON("uptimeData.json", IS_DOCKER_CONTAINER, uptimeData);
 	}
 
 	let updateNwordUsages = function () {
@@ -303,8 +315,18 @@ function milestoneFunction() {
 
 	setInterval(() => {
 		try {
+			let lastTimestamp = uptimeData.lastRecording;
+			let currentTimestamp = Math.floor(new Date().getTime() / 1000);
+
+			if (currentTimestamp - lastTimestamp >= 3600) {
+				uptimeData.lastRecording = currentTimestamp;
+				uptimeData.recordings += 1;
+				writeToJSON("uptimeData.json", IS_DOCKER_CONTAINER, uptimeData);
+				console.log("a");
+			}
+
 			if (changed) {
-				writeToJSON("db.json", IS_DOCKER_CONTAINER);
+				writeToJSON("db.json", IS_DOCKER_CONTAINER, data);
 				changed = false;
 
 				updateNwordUsages();
@@ -557,6 +579,10 @@ exports.getData = () => {
 
 exports.getLang = () => {
 	return lang;
+};
+
+exports.getUptimeData = () => {
+	return uptimeData;
 };
 
 exports.getGuildIconURL = () => {

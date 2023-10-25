@@ -10,6 +10,7 @@ node_modules/
 npm-debug.log
 startup.sh
 latesthash.cache
+uptimeData.json
 db.json
 
 Dockerfile
