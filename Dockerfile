@@ -9,10 +9,6 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install --omit=dev
 
-# Run prettier
-RUN npm install prettier -g
-RUN npx prettier --write .
-
 # Copy src files
 COPY . .
 
