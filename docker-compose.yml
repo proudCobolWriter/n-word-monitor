@@ -4,7 +4,7 @@ services:
     container_name: bot
     build: .
     environment:
-      - TOKEN
+      - TOKEN=$TOKEN
       - CLIENT_ID
       - GUILD_ID
       - EXPLICIT_WORDS
