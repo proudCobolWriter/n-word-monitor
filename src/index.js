@@ -318,7 +318,7 @@ function milestoneFunction() {
 			let lastTimestamp = uptimeData.lastRecording;
 			let currentTimestamp = Math.floor(new Date().getTime() / 1000);
 
-			if (currentTimestamp - lastTimestamp >= 3600) {
+			if (currentTimestamp - lastTimestamp >= 60 * 5) {
 				uptimeData.lastRecording = currentTimestamp;
 				uptimeData.recordings += 1;
 				writeToJSON("uptimeData.json", IS_DOCKER_CONTAINER, uptimeData);
