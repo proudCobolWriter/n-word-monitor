@@ -1,6 +1,7 @@
 # Folders
 
 logs/
+backup/
 node_modules/
 
 .git/

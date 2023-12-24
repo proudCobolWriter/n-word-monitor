@@ -282,7 +282,7 @@ function milestoneFunction() {
 	data = rawData[1];
 	lang = rawLang[1];
 
-	if (!data) {
+	if (!data || Object.keys(data).length == 0) {
 		if (fs.existsSync(rawData[0])) {
 			throw "Error retrieving database, the file is most likely skewed";
 		} else {
@@ -294,7 +294,7 @@ function milestoneFunction() {
 		throw "Couldn't retrieve lang data";
 	}
 
-	if (!uptimeData) {
+	if (!uptimeData || Object.keys(uptimeData).length == 0) {
 		uptimeData = {
 			startOfRecording: Math.floor(new Date().getTime() / 1000),
 			lastRecording: 0,
@@ -322,7 +322,6 @@ function milestoneFunction() {
 				uptimeData.lastRecording = currentTimestamp;
 				uptimeData.recordings += 1;
 				writeToJSON("uptimeData.json", IS_DOCKER_CONTAINER, uptimeData);
-				console.log("a");
 			}
 
 			if (changed) {

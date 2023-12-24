@@ -2,17 +2,18 @@ version: "3"
 services:
   bot:
     container_name: bot
+    image: proudcobolwriter/n-word-monitor
     build: .
     environment:
       - TOKEN=$TOKEN
-      - CLIENT_ID
-      - GUILD_ID
-      - EXPLICIT_WORDS
-      - PIXABAY_API_KEY
-      - HOST_URL
-      - HOST_PORT
+      - CLIENT_ID=$CLIENT_ID
+      - GUILD_ID=$GUILD_ID
+      - EXPLICIT_WORDS=$EXPLICIT_WORDS
+      - PIXABAY_API_KEY=$PIXABAY_API_KEY
+      - HOST_URL=$HOST_URL
+      - HOST_PORT=$HOST_PORT
     ports:
-      - "${HOST_PORT}:${HOST_PORT}"
+      - "${HOST_PORT}:3000"
     develop:
       watch:
         - action: sync

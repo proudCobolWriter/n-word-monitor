@@ -28,3 +28,5 @@ It is not meant for handling multiple guilds as it was designed around one disco
 ### OFFICIAL DOCUMENTATION
 
 [Discord.js](https://discord.js.org/#/)
+
+Plans to migrate the app to Docker Swarm mode

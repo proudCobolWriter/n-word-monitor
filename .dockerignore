@@ -3,6 +3,7 @@
 .vscode/
 .git/
 logs/
+backup/
 node_modules/
 
 # Files

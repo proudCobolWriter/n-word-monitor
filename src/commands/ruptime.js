@@ -25,7 +25,7 @@ module.exports = async (_, interaction) => {
 	let str = "";
 	for (let k = 0; k < 22; k++) {
 		let percentage = k / 21;
-		str = str + (percentage < runtime ? "🟩" : "❌");
+		str = str + (percentage <= runtime ? "🟩" : "❌");
 	}
 
 	let embed = new EmbedBuilder()
