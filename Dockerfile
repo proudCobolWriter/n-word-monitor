@@ -19,7 +19,6 @@ RUN apt update && apt install curl -y \
 HEALTHCHECK --interval=10s --timeout=30s --retries=3 CMD curl --fail http://localhost:3000 || exit 1
 
 # Env variables
-ENV NODE_ENV=production
 ENV DOCKER_RUNNING=true
 
 # Expose the web server port

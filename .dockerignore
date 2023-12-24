@@ -17,6 +17,7 @@ db.json
 Dockerfile
 Makefile
 docker-compose.yml
+docker-compose-prod.yml
 .prettierignore
 .prettierrc
 .dockerignore
