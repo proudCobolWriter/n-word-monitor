@@ -15,15 +15,6 @@ services:
       - NODE_ENV=production
     ports:
       - "${HOST_PORT}:3000"
-    develop:
-      watch:
-        - action: sync
-          path: ./src
-          target: /usr/src/n-word-monitor/src
-          ignore:
-            - node_modules/
-        - action: rebuild
-          path: package.json
     volumes:
       - db-data:/usr/local/apps/n-word-monitor/
     restart: unless-stopped
