@@ -12,7 +12,7 @@ services:
       - PIXABAY_API_KEY=$PIXABAY_API_KEY
       - HOST_URL=$HOST_URL
       - HOST_PORT=$HOST_PORT
-      - NODE_ENV="production"
+      - NODE_ENV=production
     ports:
       - "${HOST_PORT}:3000"
     develop:
