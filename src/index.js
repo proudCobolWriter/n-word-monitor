@@ -41,6 +41,13 @@ if (process.env.NODE_ENV === "production") {
 		return new RegExp(pattern, onlyFirst ? undefined : "g");
 	};
 
+	const date = new Date();
+	const forceTwoDigits = (number) =>
+		number.toLocaleString("en-US", {
+			minimumIntegerDigits: 2,
+			useGrouping: false,
+		});
+
 	const logger = winston.createLogger({
 		defaultMeta: { service: "user-service" },
 		exitOnError: false,
@@ -54,7 +61,11 @@ if (process.env.NODE_ENV === "production") {
 				maxSize: "1g",
 				format: winston.format.combine(
 					winston.format.timestamp({
-						format: "MMM-DD-YYYY HH:mm:ss",
+						format: `MMM-DD-YYYY ${forceTwoDigits(
+							date.getHours()
+						)}:${forceTwoDigits(
+							date.getMinutes()
+						)}:${forceTwoDigits(date.getSeconds())}`,
 					}),
 					winston.format.printf(
 						({ level, message, timestamp, stack }) =>
