@@ -27,7 +27,7 @@ const client = new Client({
 
 const commands = require("./commands/");
 
-// Logging setup
+// Logging setup (times are logged in UTC)
 
 if (process.env.NODE_ENV === "production") {
 	require("winston-daily-rotate-file");
@@ -40,13 +40,6 @@ if (process.env.NODE_ENV === "production") {
 
 		return new RegExp(pattern, onlyFirst ? undefined : "g");
 	};
-
-	const date = new Date();
-	const forceTwoDigits = (number) =>
-		number.toLocaleString("en-US", {
-			minimumIntegerDigits: 2,
-			useGrouping: false,
-		});
 
 	const logger = winston.createLogger({
 		defaultMeta: { service: "user-service" },
@@ -61,11 +54,7 @@ if (process.env.NODE_ENV === "production") {
 				maxSize: "1g",
 				format: winston.format.combine(
 					winston.format.timestamp({
-						format: `MMM-DD-YYYY ${forceTwoDigits(
-							date.getHours()
-						)}:${forceTwoDigits(
-							date.getMinutes()
-						)}:${forceTwoDigits(date.getSeconds())}`,
+						format: "MMM-DD-YYYY HH:mm:ss",
 					}),
 					winston.format.printf(
 						({ level, message, timestamp, stack }) =>
