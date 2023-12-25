@@ -13,9 +13,9 @@ module.exports = async (_, interaction) => {
 
 	let uptimeData = bot.getUptimeData();
 	let hoursSinceStart =
-		(new Date().getTime() / 1000 - uptimeData.startOfRecording) / (60 * 5);
+		(new Date().getTime() / 1000 - uptimeData.startOfRecording) / 3600;
 
-	let botRuntimeHours = (uptimeData.recordings * 15) / (60 * 5);
+	let botRuntimeHours = (uptimeData.recordings * 5) / 60;
 	let runtime = clamp(
 		Number(botRuntimeHours / hoursSinceStart).toFixed(2),
 		0,
