@@ -22,7 +22,7 @@ HOST_PORT = "WEBSERVER PORT"
 
 ## Running the bot
 
-The bot can be run by either running **startup.sh** or entering "**npm** run test".
+The bot can be run by either running **startup.sh** or entering "**npm** run start". (or "**npm** run start-docker" if you are using docker, make sure the container is built, "**docker** compose up" or "**docker** compose create")
 It is not meant for handling multiple guilds as it was designed around one discord server in particular.
 
 ### OFFICIAL DOCUMENTATION
