@@ -19,7 +19,7 @@ module.exports = async (_, interaction) => {
 	let runtime = clamp(
 		Number(botRuntimeHours / hoursSinceStart).toFixed(2),
 		0,
-		1
+		1,
 	);
 
 	let str = "";
@@ -40,8 +40,8 @@ module.exports = async (_, interaction) => {
 			`The bot uptime is roughly of **${
 				runtime * 100
 			}%** (data recorded since ${new Date(
-				uptimeData.startOfRecording * 1000
-			).toLocaleDateString("en-GB", { timeZone: "UTC" })})\n${str}`
+				uptimeData.startOfRecording * 1000,
+			).toLocaleDateString("en-GB", { timeZone: "UTC" })})\n${str}`,
 		);
 
 	interaction.followUp({ embeds: [embed] }).catch((err) => {

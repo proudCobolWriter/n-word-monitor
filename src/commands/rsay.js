@@ -10,7 +10,7 @@ module.exports = async (client, interaction) => {
 	if (!isMemberAdmin) {
 		interaction
 			.followUp(
-				"You need the __**ADMINISTRATOR**__ permission to use this command!"
+				"You need the __**ADMINISTRATOR**__ permission to use this command!",
 			)
 			.catch(console.error);
 		return;
@@ -33,7 +33,7 @@ module.exports = async (client, interaction) => {
 
 		if (!canSendMsg)
 			throw new Error(
-				`No send/read permissions in channel ${channelOption.name}`
+				`No send/read permissions in channel ${channelOption.name}`,
 			);
 
 		channelOption.send(options[0].value);

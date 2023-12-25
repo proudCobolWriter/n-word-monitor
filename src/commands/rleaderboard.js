@@ -38,7 +38,7 @@ module.exports = async (_, interaction, lang, data) => {
 					name: `${emoji} ${i + 1}# place`,
 					value: lang["l_4"].format(
 						datai.user.userID,
-						datai.user.score
+						datai.user.score,
 					),
 				});
 			} else {
@@ -60,7 +60,7 @@ module.exports = async (_, interaction, lang, data) => {
 				text: lang["l_8"].format(
 					dataOnThisUser && dataOnThisUser.user
 						? dataOnThisUser.user.score
-						: "0"
+						: "0",
 				),
 				iconURL: interaction.member.displayAvatarURL(),
 			})
@@ -83,7 +83,7 @@ module.exports = async (_, interaction, lang, data) => {
 				.setLabel("Page right")
 				.setEmoji("➡️")
 				.setStyle(ButtonStyle.Success)
-				.setDisabled(buttonToDisable == "button2")
+				.setDisabled(buttonToDisable == "button2"),
 		);
 	};
 
@@ -91,7 +91,7 @@ module.exports = async (_, interaction, lang, data) => {
 		if (i.user.id === interaction.user.id) return true;
 
 		console.log(
-			`${i.member.displayName} tried using buttons on a command used by ${interaction.member.displayName}`
+			`${i.member.displayName} tried using buttons on a command used by ${interaction.member.displayName}`,
 		);
 		i.reply({
 			content: lang["l_10"],
@@ -120,7 +120,7 @@ module.exports = async (_, interaction, lang, data) => {
 				collector.on("collect", async (i) => {
 					let e = i.message.embeds[0];
 					let page = parseInt(
-						e.data.title ? e.data.title.replace(/[^0-9]/g, "") : 1
+						e.data.title ? e.data.title.replace(/[^0-9]/g, "") : 1,
 					);
 					let buttonClicked = i.customId;
 					let updatedPageValue =
@@ -138,14 +138,14 @@ module.exports = async (_, interaction, lang, data) => {
 							embeds: [
 								createEmbed(
 									updatedPageValue,
-									getFields(updatedPageValue)
+									getFields(updatedPageValue),
 								),
 							],
 							components: [createActionRow(buttonToGreyOut)],
 						});
 					} catch (err) {
 						console.log(
-							"Error occured when editing the leaderboard embed :"
+							"Error occured when editing the leaderboard embed :",
 						);
 						console.error(err);
 					}
