@@ -10,7 +10,7 @@ module.exports = async (client, interaction) => {
 	if (!isMemberAdmin) {
 		interaction
 			.followUp(
-				"You need the __**ADMINISTRATOR**__ permission to use this command!",
+				"You need the __**ADMINISTRATOR**__ permission to use this command!"
 			)
 			.catch(console.error);
 		return;
@@ -19,7 +19,7 @@ module.exports = async (client, interaction) => {
 	let options = interaction.options.data;
 	let channelOption = options[1];
 
-	if (channelOption) {
+	if (channelOption && channelOption.name === "channel") {
 		channelOption = channelOption.channel;
 	} else {
 		channelOption = interaction.channel;
@@ -33,10 +33,25 @@ module.exports = async (client, interaction) => {
 
 		if (!canSendMsg)
 			throw new Error(
-				`No send/read permissions in channel ${channelOption.name}`,
+				`No send/read permissions in channel ${channelOption.name}`
 			);
 
-		channelOption.send(options[0].value);
+		const attachment = interaction.options.getAttachment("attachment");
+		const messageContent = {
+			content: options[0].value,
+		};
+
+		if (attachment) {
+			messageContent.files = [
+				{
+					attachment: attachment.url,
+					name: attachment.name,
+					description: "Sent from the bot",
+				},
+			];
+		}
+
+		channelOption.send(messageContent);
 
 		interaction
 			.followUp(`Message successfully sent in ${channelOption.name}!`)
