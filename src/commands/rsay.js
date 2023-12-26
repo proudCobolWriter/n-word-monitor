@@ -1,3 +1,9 @@
+// Utility functions
+
+const timeout = (s) => {
+	return new Promise((resolve) => setTimeout(resolve, s * 1000));
+};
+
 // Export
 
 module.exports = async (client, interaction) => {
@@ -50,6 +56,10 @@ module.exports = async (client, interaction) => {
 				},
 			];
 		}
+
+		channelOption.sendTyping();
+
+		await timeout(3);
 
 		channelOption.send(messageContent);
 
