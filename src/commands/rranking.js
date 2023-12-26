@@ -4,6 +4,7 @@ const { EmbedBuilder } = require("discord.js");
 
 // Export
 
+// TODO: rewrite this code smarter
 module.exports = async (_, interaction, lang, data) => {
 	await interaction.deferReply();
 
@@ -46,7 +47,7 @@ module.exports = async (_, interaction, lang, data) => {
 			descriptionString = lang["l_5"];
 		} else {
 			descriptionString = lang["l_5b"].format(
-				nonselfUser.user.displayName,
+				nonselfUser.user.displayName
 			);
 		}
 	} else {
@@ -57,9 +58,7 @@ module.exports = async (_, interaction, lang, data) => {
 					dataOnThisUser.user.score != undefined
 						? dataOnThisUser.user.score
 						: "0",
-					"<@!" +
-						((newData[place - 1] || []).user || []).userID +
-						">" || "nobody lol",
+					"<@!" + ((newData[place - 1] || []).user || []).userID + ">"
 				);
 			} else {
 				descriptionString = lang["l_6b"].format(
@@ -70,25 +69,25 @@ module.exports = async (_, interaction, lang, data) => {
 						? dataOnThisUser.user.score
 						: "0",
 					nonselfUser.user.displayName,
-					"<@!" +
-						((newData[place - 1] || []).user || []).userID +
-						">" || "nobody",
+					"<@!" + ((newData[place - 1] || []).user || []).userID + ">"
 				);
 			}
 		} else {
 			if (isSelf) {
 				descriptionString = lang["l_7"].format(
+					place + 1,
 					dataOnThisUser.user.score != undefined
 						? dataOnThisUser.user.score
-						: "0",
+						: "0"
 				);
 			} else {
 				descriptionString = lang["l_7b"].format(
 					nonselfUser.user.displayName,
+					place + 1,
+					nonselfUser.user.displayName,
 					dataOnThisUser.user.score != undefined
 						? dataOnThisUser.user.score
-						: "0",
-					nonselfUser.user.displayName,
+						: "0"
 				);
 			}
 		}
@@ -117,7 +116,7 @@ module.exports = async (_, interaction, lang, data) => {
 	} else {
 		if (dataOnThisUser && dataOnThisUser.user) {
 			console.log(
-				`Data is potentially missing on "scoreAfterMidnight", "day" and "month" keys`,
+				`Data is potentially missing on "scoreAfterMidnight", "day" and "month" keys`
 			);
 		}
 	}
@@ -125,12 +124,12 @@ module.exports = async (_, interaction, lang, data) => {
 	let title = lang[isSelf ? "l_11" : "l_11b"];
 	if (isSelf) {
 		title = title.format(
-			!dataOnThisUser ? "0" : dataOnThisUser.user.score * 3.5,
+			!dataOnThisUser ? "0" : dataOnThisUser.user.score * 3.5
 		);
 	} else {
 		title = title.format(
 			nonselfUser.user.displayName,
-			!dataOnThisUser ? "0" : dataOnThisUser.user.score * 3.5,
+			!dataOnThisUser ? "0" : dataOnThisUser.user.score * 3.5
 		);
 	}
 
@@ -141,7 +140,7 @@ module.exports = async (_, interaction, lang, data) => {
 		description = description.format(
 			descriptionString,
 			nonselfUser.user.displayName,
-			scoreAfterMidnight,
+			scoreAfterMidnight
 		);
 	}
 
@@ -161,7 +160,7 @@ module.exports = async (_, interaction, lang, data) => {
 				: lang["l_8"].format(
 						dataOnCommandPosterUser && dataOnCommandPosterUser.user
 							? dataOnCommandPosterUser.user.score
-							: "0",
+							: "0"
 				  ),
 			iconURL: interaction.member.displayAvatarURL(),
 		})
