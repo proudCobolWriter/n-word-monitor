@@ -3,14 +3,16 @@ const IS_DOCKER_CONTAINER = process.env.DOCKER_RUNNING === "true";
 
 // Dependencies
 
-const fs = require("fs");
 const winston = require("winston");
+const { Client, IntentsBitField } = require("discord.js");
+
 const {
-	Client,
-	EmbedBuilder,
-	ActivityType,
-	IntentsBitField,
-} = require("discord.js");
+	setDiscordPresence,
+	checkMessage,
+	scoreAfterMidnightUpdate,
+	milestoneFunction,
+	updateNwordUsages,
+} = require("./util");
 
 const botIntents = new IntentsBitField();
 botIntents.add(
@@ -18,14 +20,23 @@ botIntents.add(
 	IntentsBitField.Flags.GuildMembers,
 	IntentsBitField.Flags.GuildMessages,
 	IntentsBitField.Flags.MessageContent,
-	IntentsBitField.Flags.GuildMessageReactions,
+	IntentsBitField.Flags.GuildMessageReactions
 );
 
 const client = new Client({
 	intents: botIntents,
 });
 
+const { writeToJson: writeToJSON, readJson: readJSON } = require("rusty");
+
 const commands = require("./commands/");
+
+// shim hasown
+const hasOwn = require("object.hasown");
+
+if (!Object.hasOwn) {
+	hasOwn.shim();
+}
 
 // Logging setup (times are logged in UTC)
 
@@ -60,11 +71,11 @@ if (process.env.NODE_ENV === "production") {
 						({ level, message, timestamp, stack }) =>
 							`${level.replace(
 								ansiRegex(),
-								"",
+								""
 							)}: BOT-LOGS: ${timestamp}: ${
 								stack ? stack : message
-							}`,
-					),
+							}`
+					)
 				),
 			}),
 			new winston.transports.Console(),
@@ -78,8 +89,8 @@ if (process.env.NODE_ENV === "production") {
 				({ level, message, timestamp, stack }) =>
 					`${level}: BOT-LOGS: ${timestamp}: ${
 						stack ? stack : message
-					}`,
-			),
+					}`
+			)
 		),
 	});
 
@@ -136,158 +147,15 @@ String.prototype.format = function () {
 	return a;
 };
 
-// Functions and event handlers
-
-function readJSON(p, readInDockerStorage = false) {
-	let result = [];
-
-	if (readInDockerStorage) {
-		// use "db-data" volume instead if ran inside a Docker container
-		p = "/usr/local/apps/n-word-monitor/" + p;
-	}
-
-	try {
-		result = fs.readFileSync(p, "utf-8");
-		result = JSON.parse(result);
-	} catch {
-		console.log("Caught an error while parsing at path : " + p);
-	}
-
-	return [p, result];
-}
-
-function writeToJSON(p, writeInDockerStorage = false, dataToWrite) {
-	if (writeInDockerStorage) {
-		// use "db-data" volume instead if ran inside a Docker container
-		p = "/usr/local/apps/n-word-monitor/" + p;
-	}
-
-	try {
-		fs.writeFileSync(p, JSON.stringify(dataToWrite, null, 4));
-		console.log(`${p} was successfully written`);
-	} catch {
-		console.log(`Caught an error while writing at path : ${p}`);
-	}
-
-	return p;
-}
-
 let presenceIndex = 0;
-function setDiscordPresence() {
-	const modulo = presenceIndex % 3;
-	const presenceSettings = [
-		{
-			activities: [
-				{
-					name: lang.presence[0].format(nwordusages),
-					type: ActivityType.Watching,
-				},
-			],
-			status: "idle",
-		},
-		{
-			activities: [
-				{
-					name: lang.presence[1],
-					type: ActivityType.Competing,
-				},
-			],
-			status: "online",
-		},
-		{
-			activities: [
-				{
-					name: lang.presence[2],
-					type: ActivityType.Watching,
-				},
-			],
-			status: "dnd",
-		},
-	];
-
-	client.user.setPresence(presenceSettings[modulo]);
-	console.log(
-		`Successfully set bot's presence (${presenceSettings[modulo].activities[0].name})`,
-	);
-
-	presenceIndex++;
-}
-
-function checkMessage(lowercaseMessage) {
-	const explicitWords = process.env.EXPLICIT_WORDS.split(",");
-	const isExplicit = explicitWords.some((word) =>
-		lowercaseMessage.includes(word),
-	);
-
-	return isExplicit;
-}
-
-function scoreAfterMidnightUpdate(userData, removing) {
-	if (
-		userData.user.scoreAfterMidnight != undefined &&
-		userData.user.day != undefined &&
-		userData.user.month != undefined
-	) {
-		if (
-			userData.user.day != new Date().getUTCDate() ||
-			userData.user.month != new Date().getUTCMonth()
-		) {
-			console.log("Resetted count : a new day has passed");
-			userData.user.scoreAfterMidnight = removing ? 0 : 1;
-			userData.user.day = new Date().getUTCDate();
-			userData.user.month = new Date().getUTCMonth();
-		} else {
-			userData.user.scoreAfterMidnight += removing ? -1 : 1;
-		}
-	}
-}
-
-function milestoneFunction() {
-	if (nwordusages % 1000 == 0 && nwordusages != 0) {
-		try {
-			let guild = client.guilds.cache.get(
-				process.env.GUILD_ID.toString(),
-			);
-
-			let createEmbed = () => {
-				return new EmbedBuilder()
-					.setTitle(lang["l_1"].title.format(nwordusages))
-					.setThumbnail(guild.iconURL ? guild.iconURL() : "")
-					.setTimestamp()
-					.setColor("Aqua")
-					.setDescription(lang["l_1"].description);
-			};
-
-			let firstChannel = guild.channels.cache.find((ch) =>
-				ch.name.includes("general"),
-			);
-
-			if (firstChannel) {
-				firstChannel.send({ embeds: [createEmbed()] });
-			} else {
-				console.log("Couldn't find a general channel!");
-			}
-		} catch (err) {
-			console.log(err);
-		}
-	}
-}
 
 (() => {
-	let rawUptime = readJSON("uptimeData.json", IS_DOCKER_CONTAINER);
-	let rawData = readJSON("db.json", IS_DOCKER_CONTAINER);
-	let rawLang = readJSON("./lang.json");
-
-	uptimeData = rawUptime[1];
-	data = rawData[1];
-	lang = rawLang[1];
+	uptimeData = readJSON("uptimeData.json", IS_DOCKER_CONTAINER);
+	data = readJSON("db.json", IS_DOCKER_CONTAINER);
+	lang = readJSON("./lang.json");
 
 	if (!data || Object.keys(data).length == 0) {
-		if (fs.existsSync(rawData[0])) {
-			throw "Error retrieving database, the file is most likely skewed";
-		} else {
-			writeToJSON("db.json", true, data);
-		}
+		writeToJSON("db.json", true, data);
 	}
 
 	if (!lang || Object.keys(lang).length == 0) {
@@ -300,18 +168,11 @@ function milestoneFunction() {
 			lastRecording: 0,
 			recordings: 0,
 		};
+
 		writeToJSON("uptimeData.json", IS_DOCKER_CONTAINER, uptimeData);
 	}
 
-	let updateNwordUsages = function () {
-		nwordusages = 0;
-		data.forEach((element) => {
-			if (element && element.user && element.user.score > 0) {
-				nwordusages = nwordusages + (element.user.score || 0);
-			}
-		});
-	};
-	updateNwordUsages();
+	updateNwordUsages(data, nwordusages);
 
 	setInterval(() => {
 		try {
@@ -328,9 +189,9 @@ function milestoneFunction() {
 				writeToJSON("db.json", IS_DOCKER_CONTAINER, data);
 				changed = false;
 
-				updateNwordUsages();
-				setDiscordPresence();
-				milestoneFunction();
+				updateNwordUsages(data, nwordusages);
+				setDiscordPresence(client, presenceIndex, nwordusages, lang);
+				milestoneFunction(client, nwordusages, lang);
 			}
 		} catch (err) {
 			console.log(err);
@@ -342,7 +203,9 @@ function milestoneFunction() {
 
 client.on("ready", async () => {
 	console.log(`Logged in as ${client.user.username}!`);
-	if (nwordusages != 0) setDiscordPresence();
+
+	if (nwordusages != 0)
+		setDiscordPresence(client, presenceIndex, nwordusages, lang);
 
 	// refresh members' profile pictures
 
@@ -353,7 +216,7 @@ client.on("ready", async () => {
 
 		const usersIds = Array.from(
 			data,
-			(element) => element.user && element.user.userID,
+			(element) => element.user && element.user.userID
 		);
 
 		const result = await Promise.allSettled(
@@ -363,7 +226,7 @@ client.on("ready", async () => {
 					promises.push(client.users.fetch(k));
 				}
 				return promises;
-			})(),
+			})()
 		);
 
 		for (const element of data) {
@@ -388,7 +251,7 @@ client.on("ready", async () => {
 			if (guild) {
 				try {
 					const member = await guild.members.fetch(
-						element.user.userID,
+						element.user.userID
 					);
 					if (member.nickname) username = member.nickname;
 				} catch (err) {
@@ -409,7 +272,7 @@ client.on("messageCreate", (msg) => {
 	let lowercaseMessage = msg.content.toLowerCase().replace(/ /g, "");
 
 	let userData = data.find(
-		(element) => element.user && element.user.userID == msg.author.id,
+		(element) => element.user && element.user.userID == msg.author.id
 	);
 
 	if (userData && userData.user) {
@@ -457,7 +320,7 @@ client.on("messageCreate", (msg) => {
 						if (place > 4) return;
 
 						msg.reply(
-							lang["l_2"].format(dataOnThisUser.user.userID),
+							lang["l_2"].format(dataOnThisUser.user.userID)
 						).then(() => {
 							console.log("User surpassed someone");
 						});
@@ -473,8 +336,8 @@ client.on("messageCreate", (msg) => {
 					1,
 					1,
 					msg.member.user.displayAvatarURL(),
-					msg.member.user.username,
-				),
+					msg.member.user.username
+				)
 			);
 		}
 
@@ -487,7 +350,7 @@ client.on("messageCreate", (msg) => {
 		lowercaseMessage.endsWith("kys")
 	) {
 		let emoji = msg.guild.emojis.cache.find(
-			(emoji) => emoji.name === "this_tbh",
+			(emoji) => emoji.name === "this_tbh"
 		);
 
 		if (emoji) {
@@ -502,7 +365,7 @@ client.on("messageDelete", (msg) => {
 
 	if (checkMessage(lowercaseMessage)) {
 		let userData = data.find(
-			(element) => element.user && element.user.userID == msg.author.id,
+			(element) => element.user && element.user.userID == msg.author.id
 		);
 
 		if (userData) {
@@ -511,7 +374,7 @@ client.on("messageDelete", (msg) => {
 			changed = true;
 
 			console.log(
-				`Message got edited : ${msg.author.username}, adding -1`,
+				`Message got edited : ${msg.author.username}, adding -1`
 			);
 		}
 	}
@@ -528,8 +391,7 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 		!checkMessage(lowercaseOldMessage)
 	) {
 		let userData = data.find(
-			(element) =>
-				element.user && element.user.userID == msgNew.author.id,
+			(element) => element.user && element.user.userID == msgNew.author.id
 		);
 
 		if (userData) {
@@ -538,7 +400,7 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 			changed = true;
 
 			console.log(
-				`Message got edited : ${msgNew.author.username}, adding +1`,
+				`Message got edited : ${msgNew.author.username}, adding +1`
 			);
 		}
 	} else if (
@@ -546,8 +408,7 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 		checkMessage(lowercaseOldMessage)
 	) {
 		let userData = data.find(
-			(element) =>
-				element.user && element.user.userID == msgNew.author.id,
+			(element) => element.user && element.user.userID == msgNew.author.id
 		);
 
 		if (userData) {
@@ -556,7 +417,7 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 			changed = true;
 
 			console.log(
-				`Message got edited : ${msgNew.author.username}, adding -1`,
+				`Message got edited : ${msgNew.author.username}, adding -1`
 			);
 		}
 	}
