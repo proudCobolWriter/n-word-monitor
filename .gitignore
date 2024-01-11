@@ -21,6 +21,8 @@ uptimeData.json
 
 [Tt]est*.json
 
+# Yarn
+
 .yarn/*
 !.yarn/cache
 !.yarn/patches
