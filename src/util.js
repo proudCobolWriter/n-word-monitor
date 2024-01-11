@@ -35,7 +35,7 @@ function setDiscordPresence(client, presenceIndex, nwordusages, lang) {
 
 	client.user.setPresence(presenceSettings[modulo]);
 	console.log(
-		`Successfully set bot's presence (${presenceSettings[modulo].activities[0].name})`
+		`Successfully set bot's presence (${presenceSettings[modulo].activities[0].name})`,
 	);
 
 	presenceIndex++;
@@ -44,7 +44,7 @@ function setDiscordPresence(client, presenceIndex, nwordusages, lang) {
 function checkMessage(lowercaseMessage) {
 	const explicitWords = process.env.EXPLICIT_WORDS.split(",");
 	const isExplicit = explicitWords.some((word) =>
-		lowercaseMessage.includes(word)
+		lowercaseMessage.includes(word),
 	);
 
 	return isExplicit;
@@ -74,7 +74,7 @@ function milestoneFunction(client, nwordusages, lang) {
 	if (nwordusages % 1000 == 0 && nwordusages != 0) {
 		try {
 			let guild = client.guilds.cache.get(
-				process.env.GUILD_ID.toString()
+				process.env.GUILD_ID.toString(),
 			);
 
 			let createEmbed = () => {
@@ -87,7 +87,7 @@ function milestoneFunction(client, nwordusages, lang) {
 			};
 
 			let firstChannel = guild.channels.cache.find((ch) =>
-				ch.name.includes("general")
+				ch.name.includes("general"),
 			);
 
 			if (firstChannel) {

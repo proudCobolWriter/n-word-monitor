@@ -10,7 +10,7 @@ module.exports = async (client, interaction) => {
 	if (!isMemberAdmin) {
 		interaction
 			.followUp(
-				"You need the __**ADMINISTRATOR**__ permission to use this command!"
+				"You need the __**ADMINISTRATOR**__ permission to use this command!",
 			)
 			.catch(console.error);
 		return;
@@ -34,23 +34,22 @@ module.exports = async (client, interaction) => {
 
 		if (!canSendMsg)
 			throw new Error(
-				`No send/read permissions in channel ${channelOption.name}`
+				`No send/read permissions in channel ${channelOption.name}`,
 			);
 
-		const messagesDeletedCollection = await channelOption.bulkDelete(
-			amount
-		);
+		const messagesDeletedCollection =
+			await channelOption.bulkDelete(amount);
 
 		interaction
 			.followUp(
-				`${messagesDeletedCollection.size} message(s) got successfully deleted in ${channelOption.name}!`
+				`${messagesDeletedCollection.size} message(s) got successfully deleted in ${channelOption.name}!`,
 			)
 			.catch(console.error);
 	} catch (err) {
 		console.error(err);
 		interaction
 			.followUp(
-				`${amount} message(s) couldn't get deleted in ${channelOption.name}.`
+				`${amount} message(s) couldn't get deleted in ${channelOption.name}.`,
 			)
 			.catch(console.error);
 	}

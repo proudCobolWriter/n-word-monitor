@@ -20,7 +20,7 @@ botIntents.add(
 	IntentsBitField.Flags.GuildMembers,
 	IntentsBitField.Flags.GuildMessages,
 	IntentsBitField.Flags.MessageContent,
-	IntentsBitField.Flags.GuildMessageReactions
+	IntentsBitField.Flags.GuildMessageReactions,
 );
 
 const client = new Client({
@@ -71,11 +71,11 @@ if (process.env.NODE_ENV === "production") {
 						({ level, message, timestamp, stack }) =>
 							`${level.replace(
 								ansiRegex(),
-								""
+								"",
 							)}: BOT-LOGS: ${timestamp}: ${
 								stack ? stack : message
-							}`
-					)
+							}`,
+					),
 				),
 			}),
 			new winston.transports.Console(),
@@ -89,8 +89,8 @@ if (process.env.NODE_ENV === "production") {
 				({ level, message, timestamp, stack }) =>
 					`${level}: BOT-LOGS: ${timestamp}: ${
 						stack ? stack : message
-					}`
-			)
+					}`,
+			),
 		),
 	});
 
@@ -216,7 +216,7 @@ client.on("ready", async () => {
 
 		const usersIds = Array.from(
 			data,
-			(element) => element.user && element.user.userID
+			(element) => element.user && element.user.userID,
 		);
 
 		const result = await Promise.allSettled(
@@ -226,7 +226,7 @@ client.on("ready", async () => {
 					promises.push(client.users.fetch(k));
 				}
 				return promises;
-			})()
+			})(),
 		);
 
 		for (const element of data) {
@@ -251,7 +251,7 @@ client.on("ready", async () => {
 			if (guild) {
 				try {
 					const member = await guild.members.fetch(
-						element.user.userID
+						element.user.userID,
 					);
 					if (member.nickname) username = member.nickname;
 				} catch (err) {
@@ -272,7 +272,7 @@ client.on("messageCreate", (msg) => {
 	let lowercaseMessage = msg.content.toLowerCase().replace(/ /g, "");
 
 	let userData = data.find(
-		(element) => element.user && element.user.userID == msg.author.id
+		(element) => element.user && element.user.userID == msg.author.id,
 	);
 
 	if (userData && userData.user) {
@@ -320,7 +320,7 @@ client.on("messageCreate", (msg) => {
 						if (place > 4) return;
 
 						msg.reply(
-							lang["l_2"].format(dataOnThisUser.user.userID)
+							lang["l_2"].format(dataOnThisUser.user.userID),
 						).then(() => {
 							console.log("User surpassed someone");
 						});
@@ -336,8 +336,8 @@ client.on("messageCreate", (msg) => {
 					1,
 					1,
 					msg.member.user.displayAvatarURL(),
-					msg.member.user.username
-				)
+					msg.member.user.username,
+				),
 			);
 		}
 
@@ -350,7 +350,7 @@ client.on("messageCreate", (msg) => {
 		lowercaseMessage.endsWith("kys")
 	) {
 		let emoji = msg.guild.emojis.cache.find(
-			(emoji) => emoji.name === "this_tbh"
+			(emoji) => emoji.name === "this_tbh",
 		);
 
 		if (emoji) {
@@ -365,7 +365,7 @@ client.on("messageDelete", (msg) => {
 
 	if (checkMessage(lowercaseMessage)) {
 		let userData = data.find(
-			(element) => element.user && element.user.userID == msg.author.id
+			(element) => element.user && element.user.userID == msg.author.id,
 		);
 
 		if (userData) {
@@ -374,7 +374,7 @@ client.on("messageDelete", (msg) => {
 			changed = true;
 
 			console.log(
-				`Message got edited : ${msg.author.username}, adding -1`
+				`Message got edited : ${msg.author.username}, adding -1`,
 			);
 		}
 	}
@@ -391,7 +391,8 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 		!checkMessage(lowercaseOldMessage)
 	) {
 		let userData = data.find(
-			(element) => element.user && element.user.userID == msgNew.author.id
+			(element) =>
+				element.user && element.user.userID == msgNew.author.id,
 		);
 
 		if (userData) {
@@ -400,7 +401,7 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 			changed = true;
 
 			console.log(
-				`Message got edited : ${msgNew.author.username}, adding +1`
+				`Message got edited : ${msgNew.author.username}, adding +1`,
 			);
 		}
 	} else if (
@@ -408,7 +409,8 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 		checkMessage(lowercaseOldMessage)
 	) {
 		let userData = data.find(
-			(element) => element.user && element.user.userID == msgNew.author.id
+			(element) =>
+				element.user && element.user.userID == msgNew.author.id,
 		);
 
 		if (userData) {
@@ -417,7 +419,7 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 			changed = true;
 
 			console.log(
-				`Message got edited : ${msgNew.author.username}, adding -1`
+				`Message got edited : ${msgNew.author.username}, adding -1`,
 			);
 		}
 	}

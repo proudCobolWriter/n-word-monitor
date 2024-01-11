@@ -16,7 +16,7 @@ module.exports = async (client, interaction) => {
 	if (!isMemberAdmin) {
 		interaction
 			.followUp(
-				"You need the __**ADMINISTRATOR**__ permission to use this command!"
+				"You need the __**ADMINISTRATOR**__ permission to use this command!",
 			)
 			.catch(console.error);
 		return;
@@ -41,7 +41,7 @@ module.exports = async (client, interaction) => {
 
 		if (!canSendMsg)
 			throw new Error(
-				`No send/read permissions in channel ${channelOption.name}`
+				`No send/read permissions in channel ${channelOption.name}`,
 			);
 
 		const attachment = interaction.options.getAttachment("attachment");
@@ -70,12 +70,12 @@ module.exports = async (client, interaction) => {
 				if (invalidSnowflake) {
 					interaction
 						.followUp(
-							"The message ID you provided is invalid! It must be a valid Discord snowflake containing numbers. Make sure to enable the Dev Tools to get that."
+							"The message ID you provided is invalid! It must be a valid Discord snowflake containing numbers. Make sure to enable the Dev Tools to get that.",
 						)
 						.catch(console.error);
 				} else {
 					const replyToMessage = await channelOption.messages.fetch(
-						messageToReply.value
+						messageToReply.value,
 					);
 
 					replyToMessage.reply(messageContent);
