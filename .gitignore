@@ -18,3 +18,5 @@ db-backup.json
 *.cache
 lang.json
 uptimeData.json
+
+[Tt]est*.json
