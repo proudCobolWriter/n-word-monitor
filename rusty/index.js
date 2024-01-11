@@ -281,6 +281,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { writeToJson } = nativeBinding
+const { writeToJson, readJson } = nativeBinding
 
 module.exports.writeToJson = writeToJson
+module.exports.readJson = readJson
