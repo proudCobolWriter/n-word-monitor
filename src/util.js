@@ -1,13 +1,13 @@
 const { ActivityType, EmbedBuilder } = require("discord.js");
 
-function setDiscordPresence(client, presenceIndex, nwordusages, lang) {
-	const modulo = presenceIndex % 3;
+function setDiscordPresence(client, botData) {
+	const modulo = botData.presenceIndex % 3;
 
 	const presenceSettings = [
 		{
 			activities: [
 				{
-					name: lang.presence[0].format(nwordusages),
+					name: botData.lang.presence[0].format(botData.nwordusages),
 					type: ActivityType.Watching,
 				},
 			],
@@ -16,7 +16,7 @@ function setDiscordPresence(client, presenceIndex, nwordusages, lang) {
 		{
 			activities: [
 				{
-					name: lang.presence[1],
+					name: botData.lang.presence[1],
 					type: ActivityType.Competing,
 				},
 			],
@@ -25,7 +25,7 @@ function setDiscordPresence(client, presenceIndex, nwordusages, lang) {
 		{
 			activities: [
 				{
-					name: lang.presence[2],
+					name: botData.lang.presence[2],
 					type: ActivityType.Watching,
 				},
 			],
@@ -35,16 +35,16 @@ function setDiscordPresence(client, presenceIndex, nwordusages, lang) {
 
 	client.user.setPresence(presenceSettings[modulo]);
 	console.log(
-		`Successfully set bot's presence (${presenceSettings[modulo].activities[0].name})`,
+		`Successfully set bot's presence (${presenceSettings[modulo].activities[0].name})`
 	);
 
-	presenceIndex++;
+	botData.presenceIndex++;
 }
 
 function checkMessage(lowercaseMessage) {
 	const explicitWords = process.env.EXPLICIT_WORDS.split(",");
 	const isExplicit = explicitWords.some((word) =>
-		lowercaseMessage.includes(word),
+		lowercaseMessage.includes(word)
 	);
 
 	return isExplicit;
@@ -70,24 +70,26 @@ function scoreAfterMidnightUpdate(userData, removing) {
 	}
 }
 
-function milestoneFunction(client, nwordusages, lang) {
-	if (nwordusages % 1000 == 0 && nwordusages != 0) {
+function milestoneFunction(client, botData) {
+	if (botData.nwordusages % 1000 == 0 && botData.nwordusages != 0) {
 		try {
 			let guild = client.guilds.cache.get(
-				process.env.GUILD_ID.toString(),
+				process.env.GUILD_ID.toString()
 			);
 
 			let createEmbed = () => {
 				return new EmbedBuilder()
-					.setTitle(lang["l_1"].title.format(nwordusages))
+					.setTitle(
+						botData.lang["l_1"].title.format(botData.nwordusages)
+					)
 					.setThumbnail(guild.iconURL ? guild.iconURL() : "")
 					.setTimestamp()
 					.setColor("Aqua")
-					.setDescription(lang["l_1"].description);
+					.setDescription(botData.lang["l_1"].description);
 			};
 
 			let firstChannel = guild.channels.cache.find((ch) =>
-				ch.name.includes("general"),
+				ch.name.includes("general")
 			);
 
 			if (firstChannel) {
@@ -101,11 +103,12 @@ function milestoneFunction(client, nwordusages, lang) {
 	}
 }
 
-function updateNwordUsages(data, nwordusages) {
-	nwordusages = 0;
+function updateNwordUsages(data, botData) {
+	botData.nwordusages = 0;
 	data.forEach((element) => {
 		if (element && element.user && element.user.score > 0) {
-			nwordusages = nwordusages + (element.user.score || 0);
+			botData.nwordusages =
+				botData.nwordusages + (element.user.score || 0);
 		}
 	});
 }

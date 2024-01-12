@@ -20,7 +20,7 @@ botIntents.add(
 	IntentsBitField.Flags.GuildMembers,
 	IntentsBitField.Flags.GuildMessages,
 	IntentsBitField.Flags.MessageContent,
-	IntentsBitField.Flags.GuildMessageReactions,
+	IntentsBitField.Flags.GuildMessageReactions
 );
 
 const client = new Client({
@@ -71,11 +71,11 @@ if (process.env.NODE_ENV === "production") {
 						({ level, message, timestamp, stack }) =>
 							`${level.replace(
 								ansiRegex(),
-								"",
+								""
 							)}: BOT-LOGS: ${timestamp}: ${
 								stack ? stack : message
-							}`,
-					),
+							}`
+					)
 				),
 			}),
 			new winston.transports.Console(),
@@ -89,8 +89,8 @@ if (process.env.NODE_ENV === "production") {
 				({ level, message, timestamp, stack }) =>
 					`${level}: BOT-LOGS: ${timestamp}: ${
 						stack ? stack : message
-					}`,
-			),
+					}`
+			)
 		),
 	});
 
@@ -108,18 +108,15 @@ if (process.env.NODE_ENV === "production") {
 const intervalDelay = 15e3;
 const coooldownMessages = 30e3;
 
-// Data storage
-
-let uptimeData = {};
-let data = [];
-let lang = {};
-
-const msgCooldownData = new Map();
-
-// Command states
-
-let changed = false;
-let nwordusages = 0;
+let botData = {
+	uptimeData: {},
+	data: [],
+	lang: {},
+	msgCooldownData: new Map(),
+	changed: false,
+	nwordusages: 0,
+	presenceIndex: 0,
+};
 
 // Create user object
 
@@ -147,12 +144,14 @@ String.prototype.format = function () {
 	return a;
 };
 
-let presenceIndex = 0;
-
 (() => {
-	uptimeData = readJSON("uptimeData.json", IS_DOCKER_CONTAINER);
-	data = readJSON("db.json", IS_DOCKER_CONTAINER);
-	lang = readJSON("./lang.json");
+	botData.uptimeData = readJSON("uptimeData.json", IS_DOCKER_CONTAINER);
+	botData.data = readJSON("db.json", IS_DOCKER_CONTAINER);
+	botData.lang = readJSON("./lang.json");
+
+	let uptimeData = botData.uptimeData;
+	let data = botData.data;
+	let lang = botData.lang;
 
 	if (!data || Object.keys(data).length == 0) {
 		writeToJSON("db.json", true, data);
@@ -172,7 +171,8 @@ let presenceIndex = 0;
 		writeToJSON("uptimeData.json", IS_DOCKER_CONTAINER, uptimeData);
 	}
 
-	updateNwordUsages(data, nwordusages);
+	updateNwordUsages(data, botData);
+	console.log("2", botData.nwordusages);
 
 	setInterval(() => {
 		try {
@@ -185,13 +185,13 @@ let presenceIndex = 0;
 				writeToJSON("uptimeData.json", IS_DOCKER_CONTAINER, uptimeData);
 			}
 
-			if (changed) {
+			if (botData.changed) {
 				writeToJSON("db.json", IS_DOCKER_CONTAINER, data);
-				changed = false;
+				botData.changed = false;
 
-				updateNwordUsages(data, nwordusages);
-				setDiscordPresence(client, presenceIndex, nwordusages, lang);
-				milestoneFunction(client, nwordusages, lang);
+				updateNwordUsages(data, botData);
+				setDiscordPresence(client, botData);
+				milestoneFunction(client, botData);
 			}
 		} catch (err) {
 			console.log(err);
@@ -204,8 +204,7 @@ let presenceIndex = 0;
 client.on("ready", async () => {
 	console.log(`Logged in as ${client.user.username}!`);
 
-	if (nwordusages != 0)
-		setDiscordPresence(client, presenceIndex, nwordusages, lang);
+	if (botData.nwordusages != 0) setDiscordPresence(client, botData);
 
 	// refresh members' profile pictures
 
@@ -215,8 +214,8 @@ client.on("ready", async () => {
 		const guild = client.guilds.cache.get(process.env.GUILD_ID.toString());
 
 		const usersIds = Array.from(
-			data,
-			(element) => element.user && element.user.userID,
+			botData.data,
+			(element) => element.user && element.user.userID
 		);
 
 		const result = await Promise.allSettled(
@@ -226,10 +225,10 @@ client.on("ready", async () => {
 					promises.push(client.users.fetch(k));
 				}
 				return promises;
-			})(),
+			})()
 		);
 
-		for (const element of data) {
+		for (const element of botData.data) {
 			if (!element.user) continue;
 
 			const fetchResult = result.find((x) => {
@@ -251,7 +250,7 @@ client.on("ready", async () => {
 			if (guild) {
 				try {
 					const member = await guild.members.fetch(
-						element.user.userID,
+						element.user.userID
 					);
 					if (member.nickname) username = member.nickname;
 				} catch (err) {
@@ -264,38 +263,39 @@ client.on("ready", async () => {
 			element.user.userMeta["iconURL"] = iconURL;
 		}
 
-		changed = true;
+		botData.changed = true;
 	}
 });
 
 client.on("messageCreate", (msg) => {
 	let lowercaseMessage = msg.content.toLowerCase().replace(/ /g, "");
 
-	let userData = data.find(
-		(element) => element.user && element.user.userID == msg.author.id,
+	let userData = botData.data.find(
+		(element) => element.user && element.user.userID == msg.author.id
 	);
 
 	if (userData && userData.user) {
 		userData.user.userMeta.iconURL = msg.member.displayAvatarURL();
+
 		userData.user.userMeta.username = msg.member.displayName;
 	}
 
 	if (checkMessage(lowercaseMessage)) {
 		if (userData && userData.user) {
 			if (
-				msgCooldownData.has(msg.author.id) &&
-				msgCooldownData.get(msg.author.id) >=
+				botData.msgCooldownData.has(msg.author.id) &&
+				botData.msgCooldownData.get(msg.author.id) >=
 					Date.now() - coooldownMessages
 			)
 				return;
 
 			userData.user.score += 1;
-			msgCooldownData.set(msg.author.id, Date.now());
+			botData.msgCooldownData.set(msg.author.id, Date.now());
 			scoreAfterMidnightUpdate(userData, false);
 
 			// Leveling up related messages
 			try {
-				let newData = [...(data || [])].sort((a, b) => {
+				let newData = [...(botData.data || [])].sort((a, b) => {
 					if (!a.user) return 1;
 					if (!b.user) return -1;
 					return (
@@ -320,7 +320,9 @@ client.on("messageCreate", (msg) => {
 						if (place > 4) return;
 
 						msg.reply(
-							lang["l_2"].format(dataOnThisUser.user.userID),
+							botData.lang["l_2"].format(
+								dataOnThisUser.user.userID
+							)
 						).then(() => {
 							console.log("User surpassed someone");
 						});
@@ -330,18 +332,18 @@ client.on("messageCreate", (msg) => {
 				console.log(err);
 			}
 		} else {
-			data.push(
+			botData.data.push(
 				new User(
 					msg.author.id,
 					1,
 					1,
 					msg.member.user.displayAvatarURL(),
-					msg.member.user.username,
-				),
+					msg.member.user.username
+				)
 			);
 		}
 
-		changed = true;
+		botData.changed = true;
 	}
 
 	// To be removed in the future
@@ -350,7 +352,7 @@ client.on("messageCreate", (msg) => {
 		lowercaseMessage.endsWith("kys")
 	) {
 		let emoji = msg.guild.emojis.cache.find(
-			(emoji) => emoji.name === "this_tbh",
+			(emoji) => emoji.name === "this_tbh"
 		);
 
 		if (emoji) {
@@ -364,17 +366,17 @@ client.on("messageDelete", (msg) => {
 	let lowercaseMessage = msg.content.toLowerCase().replace(/ /g, "");
 
 	if (checkMessage(lowercaseMessage)) {
-		let userData = data.find(
-			(element) => element.user && element.user.userID == msg.author.id,
+		let userData = botData.data.find(
+			(element) => element.user && element.user.userID == msg.author.id
 		);
 
 		if (userData) {
 			userData.user.score -= 1;
 			scoreAfterMidnightUpdate(userData, true);
-			changed = true;
+			botData.changed = true;
 
 			console.log(
-				`Message got edited : ${msg.author.username}, adding -1`,
+				`Message got edited : ${msg.author.username}, adding -1`
 			);
 		}
 	}
@@ -390,36 +392,34 @@ client.on("messageUpdate", (msgOld, msgNew) => {
 		checkMessage(lowercaseNewMessage) &&
 		!checkMessage(lowercaseOldMessage)
 	) {
-		let userData = data.find(
-			(element) =>
-				element.user && element.user.userID == msgNew.author.id,
+		let userData = botData.data.find(
+			(element) => element.user && element.user.userID == msgNew.author.id
 		);
 
 		if (userData) {
 			userData.user.score += 1;
 			scoreAfterMidnightUpdate(userData, false);
-			changed = true;
+			botData.changed = true;
 
 			console.log(
-				`Message got edited : ${msgNew.author.username}, adding +1`,
+				`Message got edited : ${msgNew.author.username}, adding +1`
 			);
 		}
 	} else if (
 		!checkMessage(lowercaseNewMessage) &&
 		checkMessage(lowercaseOldMessage)
 	) {
-		let userData = data.find(
-			(element) =>
-				element.user && element.user.userID == msgNew.author.id,
+		let userData = botData.data.find(
+			(element) => element.user && element.user.userID == msgNew.author.id
 		);
 
 		if (userData) {
 			userData.user.score -= 1;
 			scoreAfterMidnightUpdate(userData, true);
-			changed = true;
+			botData.changed = true;
 
 			console.log(
-				`Message got edited : ${msgNew.author.username}, adding -1`,
+				`Message got edited : ${msgNew.author.username}, adding -1`
 			);
 		}
 	}
@@ -430,7 +430,12 @@ client.on("interactionCreate", async (interaction) => {
 	if (interaction.channel.guildId !== process.env.GUILD_ID) return;
 
 	if (commands[interaction.commandName])
-		commands[interaction.commandName](client, interaction, lang, data);
+		commands[interaction.commandName](
+			client,
+			interaction,
+			botData.lang,
+			botData.data
+		);
 });
 
 client.on("error", console.error);
@@ -438,15 +443,15 @@ client.on("error", console.error);
 // Exports and initialization
 
 exports.getData = () => {
-	return data;
+	return botData.data;
 };
 
 exports.getLang = () => {
-	return lang;
+	return botData.lang;
 };
 
 exports.getUptimeData = () => {
-	return uptimeData;
+	return botData.uptimeData;
 };
 
 exports.getGuildIconURL = () => {
