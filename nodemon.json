@@ -1,6 +1,6 @@
 {
 	"verbose": true,
-	"ignore": ["./db.json", "*.cache", "./**/*.log"],
+	"ignore": ["./db.json", "./uptime", "*.cache", "./**/*.log"],
 	"execMap": {
 		"js": "npm run start"
 	}
