@@ -1,3 +1,29 @@
+# Rust compilation stage
+FROM rust:slim-buster as buildrs
+
+# Get NPM
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y nodejs \
+    npm
+
+# Working directory
+WORKDIR /src
+
+# Copy package json files
+COPY ./rusty/package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy src files
+COPY ./rusty .
+
+# Build the rust bot part
+RUN npm run build
+
+
+
+# Node stage
 FROM node:17
 
 # Working directory
@@ -11,18 +37,14 @@ RUN npm install --omit=dev
 
 # Copy src files
 COPY . .
+COPY --from=buildrs /src/ /usr/src/n-word-monitor/rusty
 
 # Healthcheck
 RUN apt update && apt install curl -y \
         && rm -rf /var/lib/apt/lists/*
 
-HEALTHCHECK --interval=10m --timeout=30s --retries=3 CMD curl --fail http://localhost:3000 || exit 1
-
 # Env variables
 ENV DOCKER_RUNNING=true
-
-# Expose the web server port
-EXPOSE $HOST_PORT
 
 # Run the bot
 CMD [ "node", "." ]

@@ -27,6 +27,12 @@ services:
     volumes:
       - db-data:/usr/local/apps/n-word-monitor/
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl -f http://localhost:3000 || exit 1"]
+      timeout: 30s
+      interval: 10s
+      retries: 3
+      disable: false
 
 volumes:
   db-data:
