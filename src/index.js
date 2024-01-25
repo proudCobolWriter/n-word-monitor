@@ -61,7 +61,7 @@ if (process.env.NODE_ENV === "production") {
 				filename: IS_DOCKER_CONTAINER
 					? "/usr/local/apps/n-word-monitor/logs/combined-%DATE%.log"
 					: "./logs/combined-%DATE%.log",
-				datePattern: "MM-DD-YYYY-HH",
+				datePattern: "MM-DD-YYYY",
 				maxSize: "1g",
 				format: winston.format.combine(
 					winston.format.timestamp({
