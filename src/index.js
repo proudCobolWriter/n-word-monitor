@@ -172,7 +172,6 @@ String.prototype.format = function () {
 	}
 
 	updateNwordUsages(data, botData);
-	console.log("2", botData.nwordusages);
 
 	setInterval(() => {
 		try {
