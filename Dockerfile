@@ -1,10 +1,5 @@
 # Rust compilation stage
-FROM rust:slim-buster as buildrs
-
-# Get NPM
-RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y nodejs \
-    npm
+FROM ghcr.io/napi-rs/napi-rs/nodejs-rust:lts-debian as buildrs
 
 # Working directory
 WORKDIR /src
@@ -15,12 +10,11 @@ COPY ./rusty/package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy src files
+# Copy the files from the rusty folder
 COPY ./rusty .
 
 # Build the rust bot part
 RUN npm run build
-
 
 
 # Node stage
@@ -35,9 +29,13 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install --omit=dev
 
-# Copy src files
+# Copy all the files
 COPY . .
-COPY --from=buildrs /src/ /usr/src/n-word-monitor/rusty
+
+# Remove the prebuild rusty folder and copy the rusty folder after it has been built in the buildrs stage
+RUN rm -Rf ./rusty
+
+COPY --from=buildrs /src/ ./rusty
 
 # Healthcheck
 RUN apt update && apt install curl -y \
