@@ -17,7 +17,7 @@ services:
       - "${HOST_PORT}:3000"
     volumes:
       - db-data:/usr/local/apps/n-word-monitor/
-    restart: unless-stopped
+    restart: always
     healthcheck:
       test: curl --fail http://localhost:3000 || exit 1
       timeout: 10m
