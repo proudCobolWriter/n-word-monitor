@@ -185,7 +185,10 @@ String.prototype.format = function () {
 			}
 
 			if (botData.changed) {
-				writeToJSON("db.json", IS_DOCKER_CONTAINER, data);
+				console.log(
+					"printing data:",
+					writeToJSON("db.json", IS_DOCKER_CONTAINER, data)
+				);
 				botData.changed = false;
 
 				updateNwordUsages(data, botData);
