@@ -331,18 +331,17 @@ client.on("messageCreate", (msg) => {
 				console.log(err);
 			}
 		} else {
-			if (msg.message != undefined) {
-				// DEBUG: occasional error without this extra check -> TypeError: Cannot read properties of null (reading 'user')
-				botData.data.push(
-					new User(
-						msg.author.id,
-						1,
-						1,
-						msg.member.user.displayAvatarURL(),
-						msg.member.user.username
-					)
-				);
-			}
+			let member = msg.member || msg.guild.members.fetch(msg.author.id);
+
+			botData.data.push(
+				new User(
+					msg.author.id,
+					1,
+					1,
+					member.user.displayAvatarURL(),
+					member.user.username
+				)
+			);
 		}
 
 		botData.changed = true;
